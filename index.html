@@ -194,42 +194,6 @@
   .btn-x { background: none; border: 0; color: var(--suave); padding: 4px; font-size: 16px; justify-content: center; }
   .btn-x:hover { background: #fbe7e4; color: var(--mal); }
 
-  /* ---------- Foto + IA ---------- */
-  .zona-foto {
-    border: 2px dashed #a9b8cc; border-radius: 12px; background: #f7f9fc; min-height: 190px;
-    display: grid; place-items: center; text-align: center; padding: 14px; position: relative; overflow: hidden;
-    transition: border-color .15s, background .15s;
-  }
-  .zona-foto.encima { border-color: var(--acento); background: var(--acento-claro); }
-  .zona-foto img { max-width: 100%; max-height: 280px; border-radius: 8px; display: block; }
-  .zona-foto .vacia svg { width: 48px; height: 48px; color: #8a9bb3; }
-  .zona-foto .vacia p { margin: 6px 0 0; color: var(--suave); font-size: 13px; }
-  .botones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-  .botones > button { flex: 1; justify-content: center; }
-  .btn-ia { background: linear-gradient(90deg, #7c3aed, #1f5fbf); border: 0; }
-  .btn-ia:hover { background: linear-gradient(90deg, #6d28d9, #174a96); }
-  .cargando { display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3effd; border-radius: 9px; color: #5b21b6; margin-top: 10px; }
-  .giro { width: 18px; height: 18px; border: 3px solid #c4b5fd; border-top-color: #7c3aed; border-radius: 50%; animation: giro .8s linear infinite; }
-  @keyframes giro { to { transform: rotate(360deg); } }
-  .aviso { padding: 10px 12px; border-radius: 9px; font-size: 13px; margin-top: 10px; line-height: 1.4; }
-  .aviso.mal { background: #fbe7e4; color: #8e2a1f; }
-  .aviso.info { background: #eef4fd; color: #1d4580; }
-  .ident { background: linear-gradient(135deg, #f5f0ff, #eef4fd); border: 1px solid #d8cdf7; border-radius: 10px; padding: 12px; margin-top: 12px; }
-  .ident h4 { margin: 0 0 4px; font-size: 16px; }
-  .conf { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; margin-left: 6px; vertical-align: middle; }
-  .conf.alta { background: #c9ebd6; color: #145c33; } .conf.media { background: #f6e3b3; color: #7a5110; } .conf.baja { background: #f3c1ba; color: #8e2a1f; }
-  .med-ia { border: 1.5px solid var(--borde); border-radius: 9px; padding: 8px; margin-top: 8px; background: #fff; }
-  .med-ia.apagada { opacity: .5; }
-  .med-ia .l1 { display: grid; grid-template-columns: 22px 1fr 84px 30px 28px; gap: 6px; align-items: center; }
-  .med-ia .l2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
-  .med-ia input, .med-ia select { font: inherit; font-size: 13px; padding: 4px 6px; border: 1.5px solid var(--borde); border-radius: 6px; width: 100%; background: #fff; }
-  .med-ia input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--acento); }
-  .med-ia .como { font-size: 12px; color: var(--suave); margin-top: 5px; line-height: 1.35; }
-  dialog { border: 0; border-radius: 14px; padding: 0; max-width: min(720px, 94vw); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
-  dialog::backdrop { background: rgba(10,16,26,.6); }
-  dialog video { display: block; width: 100%; max-height: 70vh; background: #000; }
-  dialog .botones { padding: 10px; margin: 0; }
-
   /* ---------- Visor ---------- */
   #visor-cont { position: relative; min-width: 0; min-height: 0; background: #e8ecf2; }
   #visor { position: absolute; inset: 0; }
@@ -300,14 +264,17 @@
       <path d="M14 3h4l.7 3.2 2.6 1.1 2.8-1.8 2.8 2.8-1.8 2.8 1.1 2.6L29 14v4l-3.2.7-1.1 2.6 1.8 2.8-2.8 2.8-2.8-1.8-2.6 1.1L18 29h-4l-.7-3.2-2.6-1.1-2.8 1.8-2.8-2.8 1.8-2.8-1.1-2.6L3 18v-4l3.2-.7 1.1-2.6-1.8-2.8 2.8-2.8 2.8 1.8 2.6-1.1z"/>
       <circle cx="16" cy="16" r="4.5"/><path d="M15 11.5h2v1.6h-2z" fill="currentColor"/>
     </symbol>
-    <symbol id="i-camara" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
-      <path d="M4 10h5l2.5-3.5h9L23 10h5v16H4z"/><circle cx="16" cy="17.5" r="5.5"/>
+    <symbol id="i-peldanos" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M6 29L22 3M14 29L30 3"/><path d="M8.5 25h7.5M11 21h7.5M13.5 17h7.5M16 13h7.5M18.5 9h7.5" stroke-width="2.5"/>
     </symbol>
-    <symbol id="i-ia" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
-      <path d="M16 3l2.6 7.4L26 13l-7.4 2.6L16 23l-2.6-7.4L6 13l7.4-2.6z"/><path d="M25 21l1.2 3.3L29.5 25.5l-3.3 1.2L25 30l-1.2-3.3-3.3-1.2 3.3-1.2z" stroke-width="1.5"/>
+    <symbol id="i-plataforma" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M3 14h26v3H3z"/><path d="M5 17v12M27 17v12M5 29l22-12" stroke-width="1.6"/><path d="M5 14V5M27 14V5M5 5h22M5 9.5h22" stroke-width="1.6"/>
     </symbol>
-    <symbol id="i-subir" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
-      <path d="M16 21V6M10 12l6-6 6 6"/><path d="M5 20v6h22v-6"/>
+    <symbol id="i-cubo" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M4 8h3l1-3h3l1 3h3v16h-3l-1 3H8l-1-3H4z"/><path d="M15 11h13v10H15"/><path d="M4 16h24" stroke-dasharray="3 2" stroke-width="1"/>
+    </symbol>
+    <symbol id="i-rodamiento" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="16" cy="16" r="13"/><circle cx="16" cy="16" r="5"/><circle cx="16" cy="7" r="2.6"/><circle cx="16" cy="25" r="2.6"/><circle cx="7" cy="16" r="2.6"/><circle cx="25" cy="16" r="2.6"/><circle cx="9.6" cy="9.6" r="2.6"/><circle cx="22.4" cy="22.4" r="2.6"/><circle cx="22.4" cy="9.6" r="2.6"/><circle cx="9.6" cy="22.4" r="2.6"/>
     </symbol>
     <symbol id="i-regla" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
       <path d="M3 21L21 3l8 8-18 18z"/><path d="M8 16l2.5 2.5M11.5 12.5l2 2M15 9l2.5 2.5M18.5 5.5l2 2" stroke-width="1.5"/>
@@ -349,21 +316,20 @@
       <span class="t-txt"><b>Pernos y roscas</b><span>Rosca interna / externa, tuercas</span></span>
       <span class="insignia lista">Listo</span>
     </button>
-    <button class="tarjeta-mod" disabled title="Próximamente">
+    <button class="tarjeta-mod" data-vista="escalera">
       <span class="t-ico"><svg><use href="#i-escalera"/></svg></span>
-      <span class="t-txt"><b>Escalera / plataforma</b><span>Persona de 90 kg + herramientas</span></span>
-      <span class="insignia pronto">Pronto</span>
+      <span class="t-txt"><b>Escalera / plataforma</b><span>Estructura para 90 kg + herramientas</span></span>
+      <span class="insignia lista">Listo</span>
     </button>
-    <button class="tarjeta-mod" disabled title="Próximamente">
+    <button class="tarjeta-mod" data-vista="pinon">
       <span class="t-ico"><svg><use href="#i-pinon"/></svg></span>
-      <span class="t-txt"><b>Piñón con chavetero</b><span>Engranaje recto, chaveta</span></span>
-      <span class="insignia pronto">Pronto</span>
+      <span class="t-txt"><b>Piñón con chavetero</b><span>Engranaje recto, chaveta DIN 6885</span></span>
+      <span class="insignia lista">Listo</span>
     </button>
-    <h2>Herramientas</h2>
-    <button class="tarjeta-mod" data-vista="foto">
-      <span class="t-ico"><svg><use href="#i-camara"/></svg></span>
-      <span class="t-txt"><b>Foto + IA</b><span>Saca una foto y la IA te dice qué medir</span></span>
-      <span class="insignia ia">IA</span>
+    <button class="tarjeta-mod" data-vista="rodamiento">
+      <span class="t-ico"><svg><use href="#i-rodamiento"/></svg></span>
+      <span class="t-txt"><b>Rodamientos</b><span>Selección y vida L10 (ISO 281)</span></span>
+      <span class="insignia lista">Listo</span>
     </button>
     <div class="nav-pie">Unidades: mm · N · MPa<br>Exporta DXF (AutoCAD) y STL (SolidWorks)</div>
   </nav>
@@ -388,11 +354,12 @@
         </div>
       </details>
 
-      <details class="sec" id="sec-extras" hidden open>
-        <summary><svg class="ico"><use href="#i-camara"/></svg>Medidas adicionales (de la foto)</summary>
+      <details class="sec" id="sec-extras">
+        <summary><svg class="ico"><use href="#i-regla"/></svg>Medidas adicionales <span class="nota" id="n-extras" style="margin:0 0 0 4px"></span></summary>
         <div class="cuerpo">
-          <p class="nota">Medidas que no corresponden a un campo del módulo. Se anotan en el plano DXF.</p>
+          <p class="nota">Para piezas irregulares: agrega las medidas que no tienen campo propio (chaflanes, agujeros, radios…). Se anotan en el plano DXF.</p>
           <div id="extras"></div>
+          <button class="claro" id="btn-extra" style="width:100%;justify-content:center"><svg class="ico"><use href="#i-mas"/></svg>Agregar medida</button>
         </div>
       </details>
 
@@ -408,6 +375,7 @@
             <div class="fila2" style="margin-top:6px">
               <div class="campo" style="grid-template-columns:1fr 80px;margin:0"><label for="mat-re">Re (MPa)</label><input id="mat-re" type="number" value="400"></div>
               <div class="campo" style="grid-template-columns:1fr 80px;margin:0"><label for="mat-rm">Rm (MPa)</label><input id="mat-rm" type="number" value="600"></div>
+              <div class="campo" style="grid-template-columns:1fr 80px;margin:0"><label for="mat-e">E (GPa)</label><input id="mat-e" type="number" value="200"></div>
             </div>
           </div>
         </div>
@@ -431,67 +399,6 @@
       </details>
     </div>
 
-    <!-- ===== Vista Foto + IA ===== -->
-    <div id="vista-foto" hidden>
-      <div class="cab-vista">
-        <span class="t-ico"><svg><use href="#i-ia"/></svg></span>
-        <h2>Foto + IA</h2>
-      </div>
-      <p class="desc">Saca o sube una foto de la pieza. La IA identifica la pieza y propone qué medidas tomar y con qué instrumento. Puedes corregir, agregar o quitar medidas antes de pasarlas al módulo.</p>
-
-      <div class="zona-foto" id="zona-foto">
-        <div class="vacia" id="foto-vacia">
-          <svg><use href="#i-camara"/></svg>
-          <p><b>Arrastra una foto aquí</b><br>o usa los botones de abajo</p>
-        </div>
-        <img id="foto-img" alt="Foto de la pieza" hidden>
-      </div>
-      <div class="botones">
-        <button class="claro" id="btn-camara"><svg class="ico"><use href="#i-camara"/></svg>Sacar foto</button>
-        <button class="claro" id="btn-subir"><svg class="ico"><use href="#i-subir"/></svg>Subir imagen</button>
-      </div>
-      <input type="file" id="in-foto" accept="image/*" hidden>
-      <input type="file" id="in-foto-cam" accept="image/*" capture="environment" hidden>
-
-      <details class="sec" open>
-        <summary><svg class="ico"><use href="#i-regla"/></svg>Datos para la IA</summary>
-        <div class="cuerpo">
-          <div class="etq-grupo">Módulo de destino</div>
-          <div class="fichas" id="ia-destino"></div>
-          <div class="etq-grupo">Notas (opcional)</div>
-          <textarea id="ia-notas" class="ancho" rows="2" placeholder="Ej.: la moneda de la foto mide 25 mm; la pieza es de una máquina envasadora…"></textarea>
-        </div>
-      </details>
-
-      <details class="sec" id="sec-clave">
-        <summary><svg class="ico"><use href="#i-ia"/></svg>Conexión con la IA (Claude)</summary>
-        <div class="cuerpo">
-          <p class="nota">Se necesita una clave de API de Anthropic (console.anthropic.com). La clave queda en este navegador y se envía solo a api.anthropic.com. Úsala sólo en tu propio equipo.</p>
-          <input id="ia-clave" class="ancho" type="password" placeholder="sk-ant-…" autocomplete="off">
-          <label class="nota" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="ia-recordar"> Recordar en este equipo</label>
-        </div>
-      </details>
-
-      <div class="botones">
-        <button class="grande btn-ia" id="btn-analizar"><svg class="ico"><use href="#i-ia"/></svg>Analizar con IA</button>
-      </div>
-      <div class="botones" style="margin-top:6px">
-        <button class="claro" id="btn-plantilla" title="Sin internet: carga la lista estándar de medidas del módulo">Lista estándar sin IA</button>
-      </div>
-
-      <div id="ia-estado"></div>
-      <div id="ia-resultado" hidden>
-        <div class="ident" id="ia-ident"></div>
-        <div class="etq-grupo" style="margin-top:14px">Medidas a tomar <span style="font-weight:400;text-transform:none">(edita, desmarca o agrega)</span></div>
-        <div id="ia-medidas"></div>
-        <div class="botones">
-          <button class="claro" id="btn-agregar-med"><svg class="ico"><use href="#i-mas"/></svg>Agregar medida</button>
-        </div>
-        <div class="botones">
-          <button class="grande" id="btn-aplicar">Usar estas medidas en el módulo →</button>
-        </div>
-      </div>
-    </div>
   </section>
 
   <!-- Visor 3D -->
@@ -515,14 +422,6 @@
     </div>
   </section>
 </main>
-
-<dialog id="dlg-camara">
-  <video id="cam-video" autoplay playsinline muted></video>
-  <div class="botones">
-    <button class="claro" id="cam-cancelar">Cancelar</button>
-    <button class="grande" id="cam-capturar"><svg class="ico"><use href="#i-camara"/></svg>Capturar</button>
-  </div>
-</dialog>
 
 <div id="toast" role="status"></div>
 
@@ -802,11 +701,11 @@ const moduloPernos = {
     if (['d', 'p', 's', 'k', 'm'].includes(id)) ponerSelector('norma', 'libre');
   },
 
-  validar(v) {
+  validar(v, sel) {
     const e = {};
     if (v.p >= v.d / 2) e.p = 'El paso debe ser menor que d/2.';
-    if (this._tipo !== 'tuerca' && v.b > v.L) e.b = 'No puede superar la longitud L.';
-    if (this._tipo === 'conjunto' && v.m > v.b) e.m = 'La tuerca debe caber en la zona roscada (m ≤ b).';
+    if (sel.tipo !== 'tuerca' && v.b > v.L) e.b = 'No puede superar la longitud L.';
+    if (sel.tipo === 'conjunto' && v.m > v.b) e.m = 'La tuerca debe caber en la zona roscada (m ≤ b).';
     if (v.s <= v.d) e.s = 'Debe ser mayor que el diámetro d.';
     return e;
   },
@@ -1013,7 +912,753 @@ const moduloPernos = {
   },
 };
 
-const MODULOS = { pernos: moduloPernos };
+
+/* =====================================================================
+   Utilidades geométricas comunes
+   ===================================================================== */
+/** Barra prismática entre dos puntos (Vector3), sección sx × sz. */
+function barra(grupo, mat, a, b, sx, sz) {
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const L = dir.length();
+  if (L < 1e-6) return null;
+  const m = new THREE.Mesh(new THREE.BoxGeometry(sx, L, sz), mat);
+  m.position.copy(a).addScaledVector(dir, 0.5);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+  grupo.add(m);
+  return m;
+}
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+const G = 9.81; // m/s²
+
+/** Propiedades de un tubo rectangular. h = alto (dirección de la carga), b = ancho, t = espesor. */
+function propsTubo(h, b, t) {
+  const hi = h - 2 * t, bi = b - 2 * t;
+  const A = b * h - bi * hi;
+  const Ix = (b * h ** 3 - bi * hi ** 3) / 12;   // flexión con carga vertical
+  const Iy = (h * b ** 3 - hi * bi ** 3) / 12;   // flexión lateral
+  const Imin = Math.min(Ix, Iy);
+  return { A, Ix, Iy, Sx: Ix / (h / 2), Sy: Iy / (b / 2), Imin, r: Math.sqrt(Imin / A), Smin: Math.min(Ix / (h / 2), Iy / (b / 2)) };
+}
+
+/* =====================================================================
+   MÓDULO: Escalera / plataforma de trabajo
+   Diseñada para una persona de 90 kg + herramientas.
+   ===================================================================== */
+// Tubos estructurales: [alto h, ancho b, espesor t] en mm
+const PERFILES = {
+  '30x30x2': [30, 30, 2], '40x40x2': [40, 40, 2], '40x40x3': [40, 40, 3], '50x50x3': [50, 50, 3],
+  '60x40x3': [60, 40, 3], '80x40x3': [80, 40, 3], '100x50x3': [100, 50, 3],
+};
+
+const moduloEscalera = {
+  id: 'escalera',
+  titulo: 'Escalera / plataforma',
+  icono: 'i-escalera',
+  descripcion: 'Escalera con plataforma de trabajo en tubo estructural, para una persona de 90 kg más herramientas. Se verifican peldaños, largueros, vigas, patas (pandeo) y baranda.',
+
+  selectores: [
+    { id: 'tipo', etiqueta: 'Tipo de estructura', estilo: 'segmentos', valor: 'conjunto',
+      opciones: [['conjunto', 'Escalera + plataforma', 'i-escalera'], ['escalera', 'Solo escalera', 'i-peldanos'], ['plataforma', 'Solo plataforma', 'i-plataforma']] },
+    { id: 'perfil', etiqueta: 'Perfil (tubo alto × ancho × espesor, mm)', estilo: 'fichas', valor: '60x40x3',
+      opciones: [...Object.keys(PERFILES).map(k => [k, k]), ['libre', '✎ A mano']] },
+  ],
+
+  campos: [
+    { id: 'H',  etiqueta: 'Altura de la plataforma H', uni: 'mm', min: 300, max: 6000, valor: 1500, rmax: 4000, paso: 10, instrumento: 'Cinta métrica' },
+    { id: 'W',  etiqueta: 'Ancho W',                   uni: 'mm', min: 300, max: 3000, valor: 600, rmax: 1500, paso: 10 },
+    { id: 'Lp', etiqueta: 'Largo de la plataforma Lp', uni: 'mm', min: 300, max: 6000, valor: 800, rmax: 3000, paso: 10, solo: ['conjunto', 'plataforma'] },
+    { id: 'n',  etiqueta: 'Número de peldaños n',      uni: '',   min: 1,   max: 40,   valor: 7, rmax: 25, paso: 1, solo: ['conjunto', 'escalera'] },
+    { id: 'g',  etiqueta: 'Huella del peldaño g',      uni: 'mm', min: 150, max: 400,  valor: 250, paso: 5, solo: ['conjunto', 'escalera'] },
+    { id: 'hb', etiqueta: 'Altura de baranda hb',      uni: 'mm', min: 500, max: 1500, valor: 1000, paso: 10, solo: ['conjunto', 'plataforma'] },
+    { id: 'ph', etiqueta: 'Perfil: alto h',            uni: 'mm', min: 10,  max: 300,  valor: 60, rmax: 150, paso: 1 },
+    { id: 'pb', etiqueta: 'Perfil: ancho b',           uni: 'mm', min: 10,  max: 300,  valor: 40, rmax: 150, paso: 1 },
+    { id: 'pt', etiqueta: 'Perfil: espesor t',         uni: 'mm', min: 0.8, max: 20,   valor: 3, rmax: 8, paso: 0.1 },
+  ],
+
+  cargas: [
+    { id: 'mp',  etiqueta: 'Masa de la persona',     uni: 'kg', min: 0, max: 300, valor: 90, rmax: 150, paso: 1 },
+    { id: 'mh',  etiqueta: 'Masa de herramientas',   uni: 'kg', min: 0, max: 300, valor: 20, rmax: 100, paso: 1 },
+    { id: 'fi',  etiqueta: 'Factor de impacto',      uni: '',   min: 1, max: 3,   valor: 1.5, paso: 0.05 },
+    { id: 'Fb',  etiqueta: 'Empuje en baranda',      uni: 'N',  min: 0, max: 3000, valor: 890, rmax: 2000, paso: 10 },
+    { id: 'lim', etiqueta: 'Flecha admisible L / …', uni: '',   min: 100, max: 1000, valor: 300, paso: 10 },
+    { id: 'FSr', etiqueta: 'Factor de seguridad mínimo', uni: '', min: 1, max: 10, valor: 2, paso: 0.1, rmax: 5 },
+  ],
+
+  trabajos: [
+    ['todos', 'Todos los materiales'],
+    ['ligera', 'Carga ligera (uso ocasional, interior)'],
+    ['media', 'Carga media (taller, uso diario)'],
+    ['alta', 'Carga alta (industrial, uso intensivo)'],
+    ['corrosivo', 'Ambiente húmedo o corrosivo'],
+  ],
+
+  // Propiedades nominales: ASTM A36, A500, EN 10025, Aluminum Association
+  materiales: [
+    { id: 'A36',   nombre: 'Acero ASTM A36',            Re: 250, Rm: 400, E: 200000, trabajos: ['ligera', 'media'], uso: 'Acero estructural común, fácil de soldar.' },
+    { id: 'A500',  nombre: 'Tubo ASTM A500 Gr. B',      Re: 315, Rm: 400, E: 200000, trabajos: ['media', 'alta'],   uso: 'Tubo estructural cuadrado/rectangular.' },
+    { id: 'S275',  nombre: 'Acero S275JR',              Re: 275, Rm: 430, E: 210000, trabajos: ['ligera', 'media'], uso: 'Norma europea, uso general.' },
+    { id: 'S355',  nombre: 'Acero S355JR',              Re: 355, Rm: 510, E: 210000, trabajos: ['alta'],            uso: 'Mayor resistencia, estructuras exigidas.' },
+    { id: '6061',  nombre: 'Aluminio 6061-T6',          Re: 276, Rm: 310, E: 69000,  trabajos: ['ligera', 'corrosivo'], uso: 'Liviano y resistente a la corrosión; flecha mayor (E bajo).' },
+    { id: '304',   nombre: 'Inoxidable AISI 304',       Re: 215, Rm: 505, E: 193000, trabajos: ['corrosivo'],       uso: 'Industria alimentaria, ambientes húmedos.' },
+  ],
+  materialDefecto: 'A500',
+
+  alCambiarSelector(id, valor, ponerValores) {
+    if (id === 'perfil' && PERFILES[valor]) { const [h, b, t] = PERFILES[valor]; ponerValores({ ph: h, pb: b, pt: t }); }
+  },
+  alEditarCampo(id) { if (['ph', 'pb', 'pt'].includes(id)) ponerSelector('perfil', 'libre'); },
+
+  validar(v, sel) {
+    const e = {};
+    if (v.pt * 2 >= Math.min(v.ph, v.pb)) e.pt = 'Espesor demasiado grande para el perfil.';
+    if (sel.tipo !== 'plataforma' && v.H / (v.n + 1) > 300) e.n = 'Contrahuella > 300 mm: agregue peldaños.';
+    return e;
+  },
+
+  geometria(v, sel) {
+    const conEscalera = sel.tipo !== 'plataforma';
+    const conPlataforma = sel.tipo !== 'escalera';
+    const n = Math.round(v.n);
+    const c = conEscalera ? v.H / (n + 1) : 0;     // contrahuella
+    const Lh = conEscalera ? (n + 1) * v.g : 0;    // proyección horizontal de la escalera
+    const x0 = conEscalera ? Lh : 0;               // inicio de la plataforma
+    return { conEscalera, conPlataforma, n, c, Lh, x0, Ls: Math.hypot(Lh, v.H), th: Math.atan2(v.H, Lh || 1) };
+  },
+
+  titulo3D(v, sel) {
+    const t = { conjunto: 'Escalera con plataforma', escalera: 'Escalera', plataforma: 'Plataforma de trabajo' }[sel.tipo];
+    return `${t} H=${fmt(v.H, 0)}`;
+  },
+
+  construir3D(v, sel) {
+    const g = new THREE.Group();
+    const { conEscalera, conPlataforma, n, c, Lh, x0 } = this.geometria(v, sel);
+    const estructura = new THREE.MeshStandardMaterial({ color: 0x2f6db5, metalness: 0.4, roughness: 0.45 });
+    const piso = new THREE.MeshStandardMaterial({ color: 0xa7b0bc, metalness: 0.6, roughness: 0.5 });
+    const amarillo = new THREE.MeshStandardMaterial({ color: 0xf2b705, metalness: 0.2, roughness: 0.5 });
+    const { H, W, ph, pb } = v;
+    const zs = [-W / 2 + pb / 2, W / 2 - pb / 2];
+
+    if (conEscalera) {
+      // largueros
+      for (const z of zs) barra(g, estructura, V3(0, 0, z), V3(Lh, H, z), ph, pb);
+      // peldaños: chapa antideslizante sobre el larguero
+      const esp = Math.min(ph, 40);
+      for (let i = 1; i <= n; i++) {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(v.g * 0.92, esp, W - 2 * pb), piso);
+        m.position.set(i * v.g, i * c - esp / 2 + ph / 2, 0);
+        g.add(m);
+        const borde = new THREE.Mesh(new THREE.BoxGeometry(12, esp + 1, W - 2 * pb), amarillo);
+        borde.position.set(i * v.g - v.g * 0.46 + 6, m.position.y, 0);
+        g.add(borde);
+      }
+    }
+    if (conPlataforma) {
+      const x1 = x0 + v.Lp, yv = H - ph / 2;
+      // marco
+      for (const z of zs) barra(g, estructura, V3(x0, yv, z), V3(x1, yv, z), pb, ph);
+      for (const x of [x0 + pb / 2, x1 - pb / 2]) barra(g, estructura, V3(x, yv, -W / 2 + pb), V3(x, yv, W / 2 - pb), pb, ph);
+      // piso
+      const chapa = new THREE.Mesh(new THREE.BoxGeometry(v.Lp, 6, W), piso);
+      chapa.position.set((x0 + x1) / 2, H + 3, 0);
+      g.add(chapa);
+      // patas
+      for (const x of [x0 + pb / 2, x1 - pb / 2]) for (const z of zs) barra(g, estructura, V3(x, 0, z), V3(x, H - ph, z), pb, pb);
+      // arriostramiento diagonal en los costados
+      for (const z of zs) barra(g, estructura, V3(x0 + pb, 40, z), V3(x1 - pb, H - ph - 40, z), pb * 0.6, pb * 0.6);
+      // baranda: postes, pasamanos y travesaño intermedio
+      const ytop = H + v.hb;
+      const postes = [[x0 + pb / 2, zs[0]], [x0 + pb / 2, zs[1]], [x1 - pb / 2, zs[0]], [x1 - pb / 2, zs[1]]];
+      for (const [x, z] of postes) barra(g, amarillo, V3(x, H, z), V3(x, ytop, z), pb, pb);
+      for (const y of [ytop, H + v.hb / 2]) {
+        for (const z of zs) barra(g, amarillo, V3(x0, y, z), V3(x1, y, z), pb * 0.8, pb * 0.8);
+        barra(g, amarillo, V3(x1 - pb / 2, y, zs[0]), V3(x1 - pb / 2, y, zs[1]), pb * 0.8, pb * 0.8);
+      }
+      // rodapié
+      const rod = new THREE.Mesh(new THREE.BoxGeometry(v.Lp, 100, 4), amarillo);
+      for (const z of [-W / 2, W / 2]) { const r = rod.clone(); r.position.set((x0 + x1) / 2, H + 56, z); g.add(r); }
+    }
+    return g;
+  },
+
+  /* Cálculos — Hibbeler, Mecánica de Materiales (vigas simplemente apoyadas, carga puntual al centro);
+     Euler para pandeo de patas; OSHA 1910.23/1910.29 para escaleras y barandas. */
+  calcular(v, c, mat, sel) {
+    const { conEscalera, conPlataforma, c: ch, Ls, th } = this.geometria(v, sel);
+    const P = (c.mp + c.mh) * G * c.fi;            // carga de diseño concentrada, N
+    const pr = propsTubo(v.ph, v.pb, v.pt);
+    const E = mat.E;
+    const filas = [
+      ['Carga de diseño P = (mp+mh)·g·fi', fmt(P, 0) + ' N'],
+      ['Perfil: área A', fmt(pr.A, 0) + ' mm²'],
+      ['Perfil: inercia Iₓ', fmt(pr.Ix / 1e4, 2) + ' cm⁴'],
+    ];
+    const fsLista = [];
+    let okFlecha = true;
+    const viga = (nombre, carga, L, S, I) => {
+      const M = carga * L / 4;                       // N·mm
+      const sigma = M / S;
+      const delta = carga * L ** 3 / (48 * E * I);   // mm
+      const fs = mat.Re / sigma;
+      const flechaOk = delta <= L / c.lim;
+      okFlecha = okFlecha && flechaOk;
+      fsLista.push(fs);
+      filas.push([`${nombre}: σ`, fmt(sigma, 1) + ' MPa']);
+      filas.push([`${nombre}: FS`, fmt(fs, 2), fs >= c.FSr]);
+      filas.push([`${nombre}: flecha (lím. ${fmt(L / c.lim, 1)})`, fmt(delta, 2) + ' mm', flechaOk]);
+    };
+    if (conEscalera) {
+      viga('Peldaño', P, v.W, pr.Sx, pr.Ix);
+      viga('Larguero', P / 2 * Math.cos(th), Ls, pr.Sx, pr.Ix);   // dos largueros, componente perpendicular
+    }
+    if (conPlataforma) {
+      viga('Viga de plataforma', P / 2, v.Lp, pr.Sx, pr.Ix);
+      viga('Travesaño', P, v.W, pr.Sx, pr.Ix);
+      // Patas: pandeo de Euler, extremos articulados (K = 1). Se asume la mitad de la carga en una pata.
+      const Lk = v.H - v.ph;
+      const Pcr = Math.PI ** 2 * E * pr.Imin / Lk ** 2;
+      const lambda = Lk / pr.r;
+      const fsPandeo = Pcr / (P / 2);
+      const fsComp = mat.Re / ((P / 2) / pr.A);
+      fsLista.push(fsPandeo, fsComp);
+      filas.push(['Pata: esbeltez λ = L/r', fmt(lambda, 0), lambda <= 200]);
+      filas.push(['Pata: carga crítica de Euler', fmt(Pcr / 1000, 1) + ' kN']);
+      filas.push(['Pata: FS pandeo', fmt(fsPandeo, 1), fsPandeo >= c.FSr]);
+      // Baranda: poste en voladizo con empuje en el extremo (OSHA 1910.29: 200 lb ≈ 890 N)
+      const sigB = c.Fb * v.hb / pr.Smin;
+      const fsB = mat.Re / sigB;
+      fsLista.push(fsB);
+      filas.push(['Poste de baranda: σ', fmt(sigB, 1) + ' MPa']);
+      filas.push(['Poste de baranda: FS', fmt(fsB, 2), fsB >= c.FSr]);
+      filas.push(['Altura de baranda ≥ 990 mm (OSHA)', fmt(v.hb, 0) + ' mm', v.hb >= 990]);
+    }
+    let okErgo = true;
+    if (conEscalera) {
+      const blondel = 2 * ch + v.g;          // fórmula de Blondel: 600–650 mm
+      const ang = th * 180 / Math.PI;        // OSHA 1910.25: escaleras fijas entre 30° y 50°
+      const okB = blondel >= 600 && blondel <= 650, okA = ang >= 30 && ang <= 50;
+      okErgo = okB && okA;
+      filas.push(['Contrahuella c = H/(n+1)', fmt(ch, 1) + ' mm']);
+      filas.push(['Blondel 2c + g (600–650)', fmt(blondel, 0) + ' mm', okB]);
+      filas.push(['Inclinación (30°–50°)', fmt(ang, 1) + '°', okA]);
+    }
+    const fs = Math.min(...fsLista);
+    const okFS = fs >= c.FSr;
+    const ok = okFS && okFlecha;
+    let msg = ok ? `CUMPLE: FS mínimo = ${fmt(fs, 2)} ≥ ${fmt(c.FSr, 1)} y flechas dentro del límite`
+      : !okFS ? `NO CUMPLE: FS mínimo = ${fmt(fs, 2)} < ${fmt(c.FSr, 1)}. Use un perfil mayor.`
+              : 'NO CUMPLE: flecha excesiva. Use un perfil más alto o acorte los vanos.';
+    if (ok && !okErgo) msg += ' (revise la ergonomía de la escalera)';
+    return { filas, ok, msg, fs, fsMin: c.FSr };
+  },
+
+  dibujarDXF(v, sel, dxf, E, ox, oy) {
+    const { conEscalera, conPlataforma, n, c, Lh, x0 } = this.geometria(v, sel);
+    const X = (x) => ox + x * E, Y = (y) => oy + y * E;
+    const L = (x1, y1, x2, y2, capa) => dxf.linea(X(x1), Y(y1), X(x2), Y(y2), capa);
+    const R = (x1, y1, x2, y2, capa) => dxf.rect(X(x1), Y(y1), X(x2), Y(y2), capa);
+    const { H, W, ph, pb } = v;
+    const x1 = x0 + (conPlataforma ? v.Lp : 0);
+    const ancho = Math.max(x1, Lh);
+    L(-ancho * 0.05, 0, ancho * 1.05, 0, 'EJES');   // nivel de piso
+
+    // ----- Vista lateral -----
+    if (conEscalera) {
+      const s = Math.sin(Math.atan2(H, Lh)), co = Math.cos(Math.atan2(H, Lh));
+      L(0, 0, Lh, H);
+      L(-s * ph, co * ph, Lh - s * ph, H + co * ph);
+      const esp = Math.min(ph, 40);
+      for (let i = 1; i <= n; i++) R(i * v.g - v.g * 0.46, i * c - esp / 2 + ph / 2 - esp / 2, i * v.g + v.g * 0.46, i * c + ph / 2);
+      dxf.cota(X(0), Y(0), X(Lh), Y(0), -12, 'Lh = ' + fmt(Lh, 0));
+      dxf.texto(X(0), Y(0) - 22, 2.5, `n = ${n} peldaños · c = ${fmt(c, 1)} · g = ${fmt(v.g, 0)}`);
+    }
+    if (conPlataforma) {
+      R(x0, H - ph, x1, H);
+      R(x0, 0, x0 + pb, H - ph); R(x1 - pb, 0, x1, H - ph);
+      L(x0 + pb, 40, x1 - pb, H - ph - 40);
+      R(x0, H, x0 + pb, H + v.hb); R(x1 - pb, H, x1, H + v.hb);
+      R(x0, H + v.hb - pb * 0.8, x1, H + v.hb);
+      L(x0 + pb, H + v.hb / 2, x1 - pb, H + v.hb / 2);
+      dxf.cota(X(x0), Y(0), X(x1), Y(0), -12, 'Lp = ' + fmt(v.Lp, 0));
+      dxf.cota(X(x1), Y(H + v.hb), X(x1), Y(H), 10, 'hb = ' + fmt(v.hb, 0));
+    }
+    dxf.cota(X(0), Y(H), X(0), Y(0), -12, 'H = ' + fmt(H, 0));
+
+    // ----- Vista frontal (ancho W) -----
+    const gap = Math.max(200, ancho * 0.15);
+    const fx = ancho + gap;
+    R(fx, 0, fx + pb, conPlataforma ? H - ph : H);
+    R(fx + W - pb, 0, fx + W, conPlataforma ? H - ph : H);
+    R(fx, H - ph, fx + W, H);
+    if (conPlataforma) {
+      R(fx, H, fx + pb, H + v.hb); R(fx + W - pb, H, fx + W, H + v.hb);
+      R(fx, H + v.hb - pb * 0.8, fx + W, H + v.hb);
+      L(fx + pb, H + v.hb / 2, fx + W - pb, H + v.hb / 2);
+    }
+    L(fx + W / 2, -40, fx + W / 2, H + (conPlataforma ? v.hb : 0) + 40, 'EJES');
+    dxf.cota(X(fx), Y(0), X(fx + W), Y(0), -12, 'W = ' + fmt(W, 0));
+    dxf.texto(X(fx), Y(0) - 22, 2.5, `Perfil ${fmt(ph, 0)}x${fmt(pb, 0)}x${fmt(v.pt, 1)}`);
+  },
+
+  extensionDXF(v, sel) {
+    const { conPlataforma, Lh, x0 } = this.geometria(v, sel);
+    const x1 = x0 + (conPlataforma ? v.Lp : 0);
+    const ancho = Math.max(x1, Lh);
+    const gap = Math.max(200, ancho * 0.15);
+    return [-ancho * 0.05, 0, ancho + gap + v.W, v.H + (conPlataforma ? v.hb : 0)];
+  },
+};
+
+/* =====================================================================
+   MÓDULO: Piñón de dientes rectos con chavetero
+   ===================================================================== */
+// Factor de forma de Lewis Y, α = 20°, diente completo (Shigley, tabla 14-2)
+const LEWIS = [[12, 0.245], [13, 0.261], [14, 0.277], [15, 0.290], [16, 0.296], [17, 0.303], [18, 0.309], [19, 0.314],
+  [20, 0.322], [21, 0.328], [22, 0.331], [24, 0.337], [26, 0.346], [28, 0.353], [30, 0.359], [34, 0.371], [38, 0.384],
+  [43, 0.397], [50, 0.409], [60, 0.422], [75, 0.435], [100, 0.447], [150, 0.460], [300, 0.472], [400, 0.480]];
+function factorLewis(z) {
+  if (z <= LEWIS[0][0]) return LEWIS[0][1];
+  for (let i = 1; i < LEWIS.length; i++) {
+    const [z1, y1] = LEWIS[i - 1], [z2, y2] = LEWIS[i];
+    if (z <= z2) return y1 + (y2 - y1) * (z - z1) / (z2 - z1);
+  }
+  return LEWIS[LEWIS.length - 1][1];
+}
+// Chavetas paralelas DIN 6885-1: [d mín, d máx, b, h, t1 (eje), t2 (cubo)]
+const DIN6885 = [[6, 8, 2, 2, 1.2, 1.0], [8, 10, 3, 3, 1.8, 1.4], [10, 12, 4, 4, 2.5, 1.8], [12, 17, 5, 5, 3.0, 2.3],
+  [17, 22, 6, 6, 3.5, 2.8], [22, 30, 8, 7, 4.0, 3.3], [30, 38, 10, 8, 5.0, 3.3], [38, 44, 12, 8, 5.0, 3.3],
+  [44, 50, 14, 9, 5.5, 3.8], [50, 58, 16, 10, 6.0, 4.3], [58, 65, 18, 11, 7.0, 4.4], [65, 75, 20, 12, 7.5, 4.9],
+  [75, 85, 22, 14, 9.0, 5.4], [85, 95, 25, 14, 9.0, 5.4], [95, 110, 28, 16, 10.0, 6.4], [110, 130, 32, 18, 11.0, 7.4]];
+const MODULOS_NORM = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8];   // ISO 54, serie I
+const ALFA = 20 * Math.PI / 180;
+const inv = (a) => Math.tan(a) - a;
+
+const moduloPinon = {
+  id: 'pinon',
+  titulo: 'Piñón con chavetero',
+  icono: 'i-pinon',
+  descripcion: 'Engranaje recto de perfil evolvente (α = 20°) con agujero y chavetero DIN 6885. Calcula diámetros, resistencia del diente (Lewis), chaveta y espesor de llanta.',
+
+  selectores: [
+    { id: 'tipo', etiqueta: 'Forma', estilo: 'segmentos', valor: 'disco',
+      opciones: [['disco', 'Piñón plano', 'i-pinon'], ['cubo', 'Piñón con cubo', 'i-cubo']] },
+    { id: 'modulo', etiqueta: 'Módulo normalizado m (ISO 54)', estilo: 'fichas', valor: '2',
+      opciones: [...MODULOS_NORM.map(m => [String(m), 'm ' + String(m).replace('.', ',')]), ['libre', '✎ A mano']] },
+  ],
+
+  campos: [
+    { id: 'm',  etiqueta: 'Módulo m',                uni: 'mm', min: 0.5, max: 25,  valor: 2, rmax: 10, paso: 0.25, instrumento: 'Pie de rey', comoMedir: 'm = diámetro exterior / (z + 2)' },
+    { id: 'z',  etiqueta: 'Número de dientes z',     uni: '',   min: 8,   max: 200, valor: 24, rmax: 100, paso: 1 },
+    { id: 'b',  etiqueta: 'Ancho de cara b',         uni: 'mm', min: 2,   max: 400, valor: 20, rmax: 120, paso: 1 },
+    { id: 'de', etiqueta: 'Diámetro del eje (agujero)', uni: 'mm', min: 6, max: 130, valor: 20, rmax: 80, paso: 1 },
+    { id: 'bk', etiqueta: 'Chaveta: ancho',          uni: 'mm', min: 1,   max: 40,  valor: 6, paso: 1 },
+    { id: 'hk', etiqueta: 'Chaveta: alto',           uni: 'mm', min: 1,   max: 30,  valor: 6, paso: 1 },
+    { id: 't1', etiqueta: 'Chavetero en eje t1',     uni: 'mm', min: 0.5, max: 20,  valor: 3.5, paso: 0.1 },
+    { id: 't2', etiqueta: 'Chavetero en cubo t2',    uni: 'mm', min: 0.5, max: 20,  valor: 2.8, paso: 0.1 },
+    { id: 'Dc', etiqueta: 'Diámetro del cubo',       uni: 'mm', min: 10,  max: 400, valor: 38, rmax: 150, paso: 1, solo: ['cubo'] },
+    { id: 'Lc', etiqueta: 'Largo del cubo',          uni: 'mm', min: 2,   max: 300, valor: 20, rmax: 100, paso: 1, solo: ['cubo'] },
+  ],
+
+  cargas: [
+    { id: 'P',   etiqueta: 'Potencia transmitida', uni: 'kW',  min: 0.01, max: 2000, valor: 2.2, rmax: 30, paso: 0.1 },
+    { id: 'rpm', etiqueta: 'Velocidad',            uni: 'rpm', min: 1,    max: 20000, valor: 1450, rmax: 3600, paso: 10 },
+    { id: 'FSr', etiqueta: 'Factor de seguridad mínimo', uni: '', min: 1, max: 10, valor: 2, paso: 0.1, rmax: 5 },
+  ],
+
+  trabajos: [
+    ['todos', 'Todos los materiales'],
+    ['ligera', 'Carga ligera (baja velocidad, poca potencia)'],
+    ['media', 'Carga media (transmisiones generales)'],
+    ['alta', 'Carga alta (choques, servicio continuo)'],
+    ['corrosivo', 'Ambiente húmedo o corrosivo'],
+  ],
+
+  // Shigley, tablas A-20/A-21; fabricantes para bronce y POM
+  materiales: [
+    { id: '1020', nombre: 'Acero AISI 1020 laminado',     Re: 210, Rm: 380,  E: 207000, trabajos: ['ligera'],          uso: 'Engranajes poco cargados, fácil de mecanizar.' },
+    { id: '1045', nombre: 'Acero AISI 1045 laminado',     Re: 310, Rm: 565,  E: 207000, trabajos: ['media'],           uso: 'El más usado en piñones de uso general.' },
+    { id: '4140', nombre: 'Acero AISI 4140 bonificado',   Re: 655, Rm: 1020, E: 207000, trabajos: ['alta'],            uso: 'Alta resistencia y tenacidad, soporta choques.' },
+    { id: 'Fe30', nombre: 'Fundición gris ASTM clase 30', Re: 214, Rm: 214,  E: 100000, trabajos: ['ligera', 'media'], uso: 'Ruedas grandes, buena amortiguación (frágil: Re ≈ Rm).' },
+    { id: 'SAE65', nombre: 'Bronce SAE 65',               Re: 140, Rm: 310,  E: 110000, trabajos: ['corrosivo', 'ligera'], uso: 'Resistente a la corrosión y al desgaste.' },
+    { id: 'POM',  nombre: 'Poliacetal (POM)',             Re: 65,  Rm: 70,   E: 3000,   trabajos: ['ligera', 'corrosivo'], uso: 'Silencioso, sin lubricación, cargas bajas.' },
+  ],
+  materialDefecto: '1045',
+
+  alCambiarSelector(id, valor, ponerValores) {
+    if (id === 'modulo' && valor !== 'libre') ponerValores({ m: Number(valor) });
+  },
+  alEditarCampo(id, v, ponerValores) {
+    if (id === 'm') ponerSelector('modulo', MODULOS_NORM.includes(v.m) ? String(v.m) : 'libre');
+    if (id === 'de') {
+      const f = DIN6885.find(([a, b]) => v.de > a && v.de <= b) ?? (v.de <= 8 ? DIN6885[0] : null);
+      if (f) ponerValores({ bk: f[2], hk: f[3], t1: f[4], t2: f[5] });
+    }
+  },
+
+  diametros(v) {
+    const d = v.m * v.z, da = v.m * (v.z + 2), df = v.m * (v.z - 2.5), db = d * Math.cos(ALFA);
+    return { d, da, df, db };
+  },
+
+  validar(v, sel) {
+    const e = {};
+    const { df } = this.diametros(v);
+    if (v.bk >= v.de) e.bk = 'La chaveta no puede ser más ancha que el eje.';
+    if (v.de / 2 + v.t2 >= df / 2 - 0.5 * v.m) e.de = 'El agujero + chavetero invade los dientes. Reduzca el eje o aumente z/m.';
+    if (sel.tipo === 'cubo' && v.Dc / 2 <= v.de / 2 + v.t2 + 1) e.Dc = 'El cubo es muy delgado para el agujero.';
+    return e;
+  },
+
+  /** Contorno exterior (dientes evolventes) como lista de [x, y]. */
+  perfil(v) {
+    const { d, da, df, db } = this.diametros(v);
+    const z = Math.round(v.z), r = d / 2, ra = da / 2, rf = df / 2, rb = db / 2;
+    const psi = (rr) => {                  // semiángulo del diente en el radio rr
+      const rr2 = Math.max(rr, rb);
+      return Math.PI / (2 * z) + inv(ALFA) - inv(Math.acos(rb / rr2));
+    };
+    const N = 8, pts = [];
+    const rIni = Math.max(rf, rb);
+    for (let i = 0; i < z; i++) {
+      const c = (2 * Math.PI * i) / z;
+      const flanco = [];
+      if (rf < rb) flanco.push(rf);
+      for (let k = 0; k <= N; k++) flanco.push(rIni + (ra - rIni) * k / N);
+      for (const rr of flanco) { const a = c - Math.max(0, psi(rr)); pts.push([rr * Math.cos(a), rr * Math.sin(a)]); }
+      for (let k = 1; k < 4; k++) { const a = c - psi(ra) + 2 * psi(ra) * k / 4; pts.push([ra * Math.cos(a), ra * Math.sin(a)]); }
+      for (const rr of [...flanco].reverse()) { const a = c + Math.max(0, psi(rr)); pts.push([rr * Math.cos(a), rr * Math.sin(a)]); }
+      const a0 = c + psi(rf), a1 = c + 2 * Math.PI / z - psi(rf);
+      for (let k = 1; k < 4; k++) { const a = a0 + (a1 - a0) * k / 4; pts.push([rf * Math.cos(a), rf * Math.sin(a)]); }
+    }
+    return pts;
+  },
+
+  /** Agujero con chavetero (arriba) como lista de [x, y]. */
+  agujero(v) {
+    const R = v.de / 2, hb = v.bk / 2;
+    const beta = Math.asin(Math.min(0.999, hb / R));
+    const pts = [];
+    const a0 = Math.PI / 2 + beta, a1 = Math.PI / 2 - beta + 2 * Math.PI;
+    for (let k = 0; k <= 64; k++) { const a = a0 + (a1 - a0) * k / 64; pts.push([R * Math.cos(a), R * Math.sin(a)]); }
+    pts.push([hb, R + v.t2], [-hb, R + v.t2]);
+    return pts;
+  },
+
+  titulo3D(v, sel) { return `Piñón m${fmt(v.m, 2).replace(/,?0+$/, '')} z${Math.round(v.z)}${sel.tipo === 'cubo' ? ' con cubo' : ''}`; },
+
+  construir3D(v, sel) {
+    const g = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({ color: 0xb9c2cc, metalness: 0.7, roughness: 0.33 });
+    const aShape = (pts) => { const s = new THREE.Shape(); pts.forEach(([x, y], i) => i ? s.lineTo(x, y) : s.moveTo(x, y)); s.closePath(); return s; };
+    const aPath = (pts) => { const s = new THREE.Path(); pts.forEach(([x, y], i) => i ? s.lineTo(x, y) : s.moveTo(x, y)); s.closePath(); return s; };
+    const hueco = this.agujero(v);
+    const forma = aShape(this.perfil(v));
+    forma.holes.push(aPath(hueco));
+    const geo = new THREE.ExtrudeGeometry(forma, { depth: v.b, bevelEnabled: false, curveSegments: 1 });
+    geo.rotateX(-Math.PI / 2);
+    g.add(new THREE.Mesh(geo, mat));
+    if (sel.tipo === 'cubo') {
+      const c = new THREE.Shape(); c.absarc(0, 0, v.Dc / 2, 0, Math.PI * 2, false);
+      c.holes.push(aPath(hueco));
+      const gc = new THREE.ExtrudeGeometry(c, { depth: v.Lc, bevelEnabled: false, curveSegments: 64 });
+      gc.rotateX(-Math.PI / 2); gc.translate(0, v.b, 0);
+      g.add(new THREE.Mesh(gc, mat));
+    }
+    // chaveta (en color) para que se vea el chavetero
+    const kz = sel.tipo === 'cubo' ? v.b + v.Lc : v.b;
+    const llave = new THREE.Mesh(new THREE.BoxGeometry(v.bk * 0.98, kz, v.hk), new THREE.MeshStandardMaterial({ color: 0xd4a017, metalness: 0.5, roughness: 0.4 }));
+    // tras rotateX(-π/2) la coordenada y del perfil pasa a -z
+    llave.position.set(0, kz / 2, -(v.de / 2 + v.t2 - v.hk / 2));
+    g.add(llave);
+    return g;
+  },
+
+  /* Cálculos — Shigley, Diseño en Ingeniería Mecánica, cap. 13–14 (Lewis, Barth),
+     cap. 7 (chavetas); AGMA 2001-D04 (espesor de llanta); DIN 6885 */
+  calcular(v, c, mat, sel) {
+    const { d, da, df, db } = this.diametros(v);
+    const p = Math.PI * v.m;
+    const T = 9550 * c.P / c.rpm;                      // N·m
+    const Wt = 2000 * T / d;                           // fuerza tangencial, N
+    const V = Math.PI * d * c.rpm / 60000;             // velocidad tangencial, m/s
+    const Kv = (6.1 + V) / 6.1;                        // Barth, perfil tallado (Shigley ec. 14-4b)
+    const Y = factorLewis(v.z);
+    const sigma = Kv * Wt / (v.b * v.m * Y);           // Lewis, MPa
+    const fsDiente = mat.Re / sigma;
+    const Lk = sel.tipo === 'cubo' ? v.b + v.Lc : v.b; // largo útil de la chaveta
+    const tau = 2000 * T / (v.de * v.bk * Lk);         // corte en la chaveta
+    const fsCorte = 0.577 * mat.Re / tau;
+    const hCubo = Math.max(0.1, v.hk - v.t1);          // altura de contacto chaveta–cubo
+    const sAp = 2000 * T / (v.de * hCubo * Lk);        // aplastamiento
+    const fsAp = mat.Re / sAp;
+    const tR = df / 2 - (v.de / 2 + v.t2);             // espesor de llanta sobre el chavetero
+    const mB = tR / (2.25 * v.m);                      // AGMA: mB ≥ 1,2
+    const okZ = v.z >= 17;                             // sin socavado con α = 20°
+    const okB = v.b >= 3 * p && v.b <= 5 * p;          // Shigley: 3p ≤ b ≤ 5p
+    const fs = Math.min(fsDiente, fsCorte, fsAp);
+    const okFS = fs >= c.FSr, okLlanta = mB >= 1.2;
+    const filas = [
+      ['Diámetro primitivo d = m·z', fmt(d, 2) + ' mm'],
+      ['Diámetro exterior dₐ', fmt(da, 2) + ' mm'],
+      ['Diámetro de fondo d_f', fmt(df, 2) + ' mm'],
+      ['Diámetro base d_b', fmt(db, 2) + ' mm'],
+      ['Paso circular p = π·m', fmt(p, 2) + ' mm'],
+      ['Par transmitido T', fmt(T, 2) + ' N·m'],
+      ['Fuerza tangencial Wₜ', fmt(Wt, 0) + ' N'],
+      ['Velocidad tangencial', fmt(V, 2) + ' m/s'],
+      ['Factor dinámico K_v (Barth)', fmt(Kv, 2)],
+      ['Factor de Lewis Y', fmt(Y, 3)],
+      ['Tensión en el diente σ', fmt(sigma, 1) + ' MPa'],
+      ['FS diente (flexión)', fmt(fsDiente, 2), fsDiente >= c.FSr],
+      ['Chaveta: corte τ', fmt(tau, 1) + ' MPa'],
+      ['Chaveta: FS corte', fmt(fsCorte, 2), fsCorte >= c.FSr],
+      ['Chaveta: aplastamiento', fmt(sAp, 1) + ' MPa'],
+      ['Chaveta: FS aplastamiento', fmt(fsAp, 2), fsAp >= c.FSr],
+      ['Llanta: m_B = t_R / h_t (≥ 1,2)', fmt(mB, 2), okLlanta],
+      ['Dientes sin socavado (z ≥ 17)', String(Math.round(v.z)), okZ],
+      [`Ancho recomendado ${fmt(3 * p, 0)}–${fmt(5 * p, 0)} mm`, fmt(v.b, 0) + ' mm', okB],
+    ];
+    const ok = okFS && okLlanta;
+    let msg = ok ? `CUMPLE: FS mínimo = ${fmt(fs, 2)} ≥ ${fmt(c.FSr, 1)}`
+      : !okFS ? `NO CUMPLE: FS mínimo = ${fmt(fs, 2)} < ${fmt(c.FSr, 1)}. Aumente m, b o use un material más resistente.`
+              : 'NO CUMPLE: llanta muy delgada sobre el chavetero. Aumente z o m, o reduzca el eje.';
+    if (ok && (!okZ || !okB)) msg += ' (revise las advertencias)';
+    return { filas, ok, msg, fs, fsMin: c.FSr };
+  },
+
+  dibujarDXF(v, sel, dxf, E, ox, oy) {
+    const { d, da, df } = this.diametros(v);
+    const X = (x) => ox + x * E, Y = (y) => oy + y * E;
+    const L = (x1, y1, x2, y2, capa) => dxf.linea(X(x1), Y(y1), X(x2), Y(y2), capa);
+    // Vista frontal
+    dxf.poligono(this.perfil(v).map(([x, y]) => [X(x), Y(y)]), 'CONTORNO');
+    dxf.poligono(this.agujero(v).map(([x, y]) => [X(x), Y(y)]), 'CONTORNO');
+    dxf.circulo(X(0), Y(0), d / 2 * E, 'EJES');
+    L(-da / 2 - 4 / E, 0, da / 2 + 4 / E, 0, 'EJES'); L(0, -da / 2 - 4 / E, 0, da / 2 + 4 / E, 'EJES');
+    dxf.cota(X(-v.bk / 2), Y(v.de / 2 + v.t2), X(v.bk / 2), Y(v.de / 2 + v.t2), 6, 'b = ' + fmt(v.bk, 0));
+    dxf.texto(X(-da / 2), Y(-da / 2) - 10, 2.5, `m = ${fmt(v.m, 2)}  z = ${Math.round(v.z)}  alfa = 20°  d = ${fmt(d, 1)}  Ø eje ${fmt(v.de, 0)} H7`);
+    dxf.texto(X(-da / 2), Y(-da / 2) - 14, 2.5, `Chavetero DIN 6885: ${fmt(v.bk, 0)} x ${fmt(v.t2, 1)} (cubo)`);
+    // Vista lateral (corte)
+    const gap = Math.max(20, 0.35 * da);
+    const sx = da / 2 + gap;
+    const ancho = sel.tipo === 'cubo' ? v.b + v.Lc : v.b;
+    dxf.rect(X(sx), Y(-da / 2), X(sx + v.b), Y(da / 2), 'CONTORNO');
+    for (const s of [1, -1]) L(sx, s * df / 2, sx + v.b, s * df / 2, 'OCULTAS');
+    for (const s of [1, -1]) L(sx - 2 / E, s * d / 2, sx + v.b + 2 / E, s * d / 2, 'EJES');
+    if (sel.tipo === 'cubo') dxf.rect(X(sx + v.b), Y(-v.Dc / 2), X(sx + ancho), Y(v.Dc / 2), 'CONTORNO');
+    L(sx, v.de / 2, sx + ancho, v.de / 2, 'OCULTAS'); L(sx, -v.de / 2, sx + ancho, -v.de / 2, 'OCULTAS');
+    L(sx, v.de / 2 + v.t2, sx + ancho, v.de / 2 + v.t2, 'OCULTAS');
+    L(sx - 4 / E, 0, sx + ancho + 4 / E, 0, 'EJES');
+    dxf.cota(X(sx), Y(da / 2), X(sx + v.b), Y(da / 2), 6, 'b = ' + fmt(v.b, 0));
+    dxf.cota(X(sx + ancho), Y(da / 2), X(sx + ancho), Y(-da / 2), 8, 'Øda = ' + fmt(da, 1));
+  },
+
+  extensionDXF(v, sel) {
+    const { da } = this.diametros(v);
+    const gap = Math.max(20, 0.35 * da);
+    const ancho = sel.tipo === 'cubo' ? v.b + v.Lc : v.b;
+    return [-da / 2, -da / 2, da / 2 + gap + ancho, da / 2];
+  },
+};
+
+/* =====================================================================
+   MÓDULO: Rodamientos rígidos de bolas
+   ===================================================================== */
+// Valores de catálogo (aprox., SKF/ISO 15): d, D, B en mm; C y C0 en kN
+const RODAMIENTOS = {
+  '6000': [10, 26, 8, 4.75, 1.96], '6001': [12, 28, 8, 5.4, 2.36], '6002': [15, 32, 9, 5.85, 2.85], '6003': [17, 35, 10, 6.37, 3.25],
+  '6004': [20, 42, 12, 9.95, 5.0], '6005': [25, 47, 12, 11.9, 6.55], '6006': [30, 55, 13, 13.8, 8.3], '6007': [35, 62, 14, 16.8, 10.2],
+  '6008': [40, 68, 15, 17.8, 11.6], '6009': [45, 75, 16, 22.1, 14.6], '6010': [50, 80, 16, 22.9, 16.0],
+  '6200': [10, 30, 9, 5.4, 2.36], '6201': [12, 32, 10, 7.28, 3.1], '6202': [15, 35, 11, 8.06, 3.75], '6203': [17, 40, 12, 9.95, 4.75],
+  '6204': [20, 47, 14, 13.5, 6.55], '6205': [25, 52, 15, 14.8, 7.8], '6206': [30, 62, 16, 20.3, 11.2], '6207': [35, 72, 17, 27.0, 15.3],
+  '6208': [40, 80, 18, 32.5, 19.0], '6209': [45, 85, 19, 35.1, 21.6], '6210': [50, 90, 20, 37.1, 23.2],
+  '6300': [10, 35, 11, 8.52, 3.4], '6301': [12, 37, 12, 10.1, 4.15], '6302': [15, 42, 13, 11.9, 5.4], '6303': [17, 47, 14, 14.3, 6.55],
+  '6304': [20, 52, 15, 16.8, 7.8], '6305': [25, 62, 17, 23.4, 11.6], '6306': [30, 72, 19, 29.6, 16.0], '6307': [35, 80, 21, 35.1, 19.0],
+  '6308': [40, 90, 23, 42.3, 24.0], '6309': [45, 100, 25, 55.3, 31.5], '6310': [50, 110, 27, 65.0, 38.0],
+};
+const CODIGO_D = { 10: '00', 12: '01', 15: '02', 17: '03', 20: '04', 25: '05', 30: '06', 35: '07', 40: '08', 45: '09', 50: '10' };
+// Factores X, Y para rodamientos rígidos de bolas (Shigley, tabla 11-1)
+const FACT_E = [[0.014, 0.19, 2.30], [0.021, 0.21, 2.15], [0.028, 0.22, 1.99], [0.042, 0.24, 1.85], [0.056, 0.26, 1.71],
+  [0.070, 0.27, 1.63], [0.084, 0.28, 1.56], [0.110, 0.30, 1.45], [0.17, 0.34, 1.31], [0.28, 0.38, 1.15], [0.42, 0.42, 1.04], [0.56, 0.44, 1.00]];
+function factoresEY(r) {
+  if (r <= FACT_E[0][0]) return [FACT_E[0][1], FACT_E[0][2]];
+  for (let i = 1; i < FACT_E.length; i++) {
+    const [r1, e1, y1] = FACT_E[i - 1], [r2, e2, y2] = FACT_E[i];
+    if (r <= r2) { const k = (r - r1) / (r2 - r1); return [e1 + (e2 - e1) * k, y1 + (y2 - y1) * k]; }
+  }
+  const u = FACT_E[FACT_E.length - 1]; return [u[1], u[2]];
+}
+
+const moduloRodamiento = {
+  id: 'rodamiento',
+  titulo: 'Rodamientos',
+  icono: 'i-rodamiento',
+  descripcion: 'Rodamiento rígido de bolas (series 60, 62 y 63). Elige serie y diámetro del eje, o escribe las medidas y capacidades del catálogo. Calcula carga equivalente y vida L10.',
+  usaResistencia: false,
+
+  selectores: [
+    { id: 'serie', etiqueta: 'Serie', estilo: 'segmentos', valor: '62',
+      opciones: [['60', 'Serie 60 (ligera)', 'i-rodamiento'], ['62', 'Serie 62 (media)', 'i-rodamiento'], ['63', 'Serie 63 (pesada)', 'i-rodamiento']] },
+    { id: 'diam', etiqueta: 'Diámetro del eje d', estilo: 'fichas', valor: '25',
+      opciones: [...Object.keys(CODIGO_D).map(k => [k, 'Ø' + k]), ['libre', '✎ A mano']] },
+  ],
+
+  campos: [
+    { id: 'd',  etiqueta: 'Diámetro interior d', uni: 'mm', min: 3,   max: 500,  valor: 25, rmax: 100, paso: 1, instrumento: 'Pie de rey' },
+    { id: 'D',  etiqueta: 'Diámetro exterior D', uni: 'mm', min: 8,   max: 800,  valor: 52, rmax: 200, paso: 1, instrumento: 'Pie de rey' },
+    { id: 'B',  etiqueta: 'Ancho B',             uni: 'mm', min: 2,   max: 200,  valor: 15, rmax: 60, paso: 1, instrumento: 'Pie de rey' },
+    { id: 'C',  etiqueta: 'Capacidad dinámica C',  uni: 'kN', min: 0.1, max: 2000, valor: 14.8, rmax: 100, paso: 0.1 },
+    { id: 'C0', etiqueta: 'Capacidad estática C₀', uni: 'kN', min: 0.1, max: 2000, valor: 7.8, rmax: 60, paso: 0.1 },
+  ],
+
+  cargas: [
+    { id: 'Fr',  etiqueta: 'Carga radial Fr',  uni: 'kN',  min: 0, max: 1000, valor: 1.5, rmax: 20, paso: 0.1 },
+    { id: 'Fa',  etiqueta: 'Carga axial Fa',   uni: 'kN',  min: 0, max: 1000, valor: 0.3, rmax: 10, paso: 0.1 },
+    { id: 'rpm', etiqueta: 'Velocidad',        uni: 'rpm', min: 1, max: 30000, valor: 1500, rmax: 6000, paso: 10 },
+    { id: 'Lreq', etiqueta: 'Vida requerida', uni: 'h',   min: 100, max: 200000, valor: 10000, rmax: 60000, paso: 500 },
+  ],
+
+  trabajos: [
+    ['todos', 'Todos'],
+    ['ligera', 'Uso ocasional / doméstico'],
+    ['media', 'Máquinas de taller, 8 h/día'],
+    ['alta', 'Servicio continuo 24 h'],
+    ['corrosivo', 'Polvo, humedad o lavado'],
+  ],
+  materiales: [
+    { id: '100Cr6', nombre: 'Acero 100Cr6 (AISI 52100), abierto', trabajos: ['ligera', 'media', 'alta'], uso: 'Rodamiento estándar; requiere lubricación y protección.' },
+    { id: '2RS',    nombre: 'Acero 100Cr6 con sellos 2RS',        trabajos: ['media', 'corrosivo'], uso: 'Sellado y engrasado de por vida; protege del polvo.' },
+    { id: 'ZZ',     nombre: 'Acero 100Cr6 con tapas ZZ',          trabajos: ['ligera', 'media'], uso: 'Tapas metálicas, menor rozamiento que 2RS.' },
+    { id: '440C',   nombre: 'Inoxidable AISI 440C',               trabajos: ['corrosivo'], uso: 'Ambientes húmedos; capacidad algo menor que el 100Cr6 (ver catálogo).' },
+  ],
+  materialDefecto: '100Cr6',
+
+  alCambiarSelector(id, valor, ponerValores, sel) {
+    const cod = sel.serie + (CODIGO_D[sel.diam] ?? '');
+    const t = RODAMIENTOS[cod];
+    if (t && sel.diam !== 'libre') ponerValores({ d: t[0], D: t[1], B: t[2], C: t[3], C0: t[4] });
+  },
+  alEditarCampo(id) { if (['d', 'D', 'B', 'C', 'C0'].includes(id)) ponerSelector('diam', 'libre'); },
+
+  validar(v) {
+    const e = {};
+    if (v.D <= v.d + 4) e.D = 'D debe ser mayor que d.';
+    if (v.C0 > v.C * 1.5) e.C0 = 'C₀ inusualmente alto respecto de C; revise el catálogo.';
+    return e;
+  },
+
+  designacion(v, sel) {
+    const cod = sel.serie + (CODIGO_D[sel.diam] ?? '');
+    return sel.diam !== 'libre' && RODAMIENTOS[cod] ? cod : `${fmt(v.d, 0)}x${fmt(v.D, 0)}x${fmt(v.B, 0)}`;
+  },
+
+  geo(v) {
+    const dm = (v.d + v.D) / 2;
+    const Dw = 0.3 * (v.D - v.d);
+    const Z = Math.max(5, Math.floor(Math.PI * dm / (1.6 * Dw)));
+    return { dm, Dw, Z, roi: dm / 2 + 0.3 * Dw, rio: dm / 2 - 0.3 * Dw };
+  },
+
+  titulo3D(v, sel) { return `Rodamiento ${this.designacion(v, sel)}`; },
+
+  construir3D(v) {
+    const g = new THREE.Group();
+    const { dm, Dw, Z, roi, rio } = this.geo(v);
+    const acero = new THREE.MeshStandardMaterial({ color: 0xc8ced6, metalness: 0.85, roughness: 0.25, side: THREE.DoubleSide });
+    const bola = new THREE.MeshStandardMaterial({ color: 0xe8ecf0, metalness: 0.95, roughness: 0.12 });
+    const jaula = new THREE.MeshStandardMaterial({ color: 0xb08d57, metalness: 0.6, roughness: 0.4 });
+    const B = v.B, ch = Math.min(0.08 * B, 0.08 * (v.D - v.d));
+    const rg = 0.52 * Dw, c = dm / 2;
+    // la pista corta el aro donde el círculo de la ranura cruza su superficie
+    const phi = Math.min(Math.acos((roi - c) / rg), Math.asin(Math.min(0.99, (B / 2 - ch * 1.5) / rg)));
+    const yg = rg * Math.sin(phi);
+    const arco = (desde, hasta) => { const p = []; for (let k = 0; k <= 16; k++) { const a = desde + (hasta - desde) * k / 16; p.push(new THREE.Vector2(c + rg * Math.cos(a), rg * Math.sin(a))); } return p; };
+    const V2 = (x, y) => new THREE.Vector2(x, y);
+    // aro exterior: perfil de revolución con la pista
+    const ext = [V2(v.D / 2 - ch, -B / 2), V2(v.D / 2, -B / 2 + ch), V2(v.D / 2, B / 2 - ch), V2(v.D / 2 - ch, B / 2),
+      V2(roi, B / 2), V2(roi, yg), ...arco(phi, -phi), V2(roi, -yg), V2(roi, -B / 2), V2(v.D / 2 - ch, -B / 2)];
+    const inn = [V2(v.d / 2 + ch, -B / 2), V2(rio, -B / 2), V2(rio, -yg), ...arco(Math.PI + phi, Math.PI - phi), V2(rio, yg),
+      V2(rio, B / 2), V2(v.d / 2 + ch, B / 2), V2(v.d / 2, B / 2 - ch), V2(v.d / 2, -B / 2 + ch), V2(v.d / 2 + ch, -B / 2)];
+    g.add(new THREE.Mesh(new THREE.LatheGeometry(ext, 96), acero));
+    g.add(new THREE.Mesh(new THREE.LatheGeometry(inn, 96), acero));
+    const esfera = new THREE.SphereGeometry(Dw / 2, 32, 16);
+    for (let i = 0; i < Z; i++) {
+      const a = 2 * Math.PI * i / Z;
+      const s = new THREE.Mesh(esfera, bola);
+      s.position.set(c * Math.cos(a), 0, c * Math.sin(a));
+      g.add(s);
+    }
+    const anillo = new THREE.Mesh(new THREE.TorusGeometry(c, Dw * 0.12, 8, 96), jaula);
+    anillo.rotation.x = Math.PI / 2;
+    for (const y of [-Dw * 0.42, Dw * 0.42]) { const a = anillo.clone(); a.position.y = y; g.add(a); }
+    return g;
+  },
+
+  /* Cálculos — ISO 281 / Shigley cap. 11: P = X·Fr + Y·Fa; L10 = (C/P)³ (bolas); s0 = C0/P0 */
+  calcular(v, c, mat, sel) {
+    const r = c.Fa / v.C0;
+    const [e, Yf] = factoresEY(r);
+    const ratio = c.Fr > 0 ? c.Fa / c.Fr : Infinity;
+    const [X, Y] = ratio > e ? [0.56, Yf] : [1, 0];
+    const P = Math.max(X * c.Fr + Y * c.Fa, c.Fr, 1e-6);   // kN
+    const L10 = (v.C / P) ** 3;                              // millones de revoluciones
+    const L10h = L10 * 1e6 / (60 * c.rpm);
+    const P0 = Math.max(c.Fr, 0.6 * c.Fr + 0.5 * c.Fa);
+    const s0 = P0 > 0 ? v.C0 / P0 : Infinity;
+    const Creq = P * (60 * c.rpm * c.Lreq / 1e6) ** (1 / 3);
+    const okVida = L10h >= c.Lreq, okS0 = s0 >= 1;
+    const filas = [
+      ['Designación', this.designacion(v, sel)],
+      ['Fa / C₀', fmt(r, 3)],
+      ['Factor e', fmt(e, 2)],
+      ['Fa / Fr', Number.isFinite(ratio) ? fmt(ratio, 2) : '∞'],
+      ['Factores X / Y', `${fmt(X, 2)} / ${fmt(Y, 2)}`],
+      ['Carga equivalente P', fmt(P, 2) + ' kN'],
+      ['Vida L10', fmt(L10, 0) + ' Mrev'],
+      ['Vida L10h', fmt(L10h, 0) + ' h', okVida],
+      ['C requerida para la vida pedida', fmt(Creq, 1) + ' kN', v.C >= Creq],
+      ['Seguridad estática s₀ = C₀/P₀ (≥ 1)', Number.isFinite(s0) ? fmt(s0, 2) : '∞', okS0],
+    ];
+    const ok = okVida && okS0;
+    const msg = ok ? `CUMPLE: vida ${fmt(L10h, 0)} h ≥ ${fmt(c.Lreq, 0)} h`
+      : !okVida ? `NO CUMPLE: vida ${fmt(L10h, 0)} h < ${fmt(c.Lreq, 0)} h. Necesita C ≥ ${fmt(Creq, 1)} kN (serie más pesada o mayor d).`
+                : 'NO CUMPLE: seguridad estática s₀ < 1.';
+    return { filas, ok, msg, fs: L10h / c.Lreq, fsMin: 1, etqMin: 'Vida / requerida ' };
+  },
+
+  dibujarDXF(v, sel, dxf, E, ox, oy) {
+    const { dm, Dw, roi, rio } = this.geo(v);
+    const X = (x) => ox + x * E, Y = (y) => oy + y * E;
+    const L = (x1, y1, x2, y2, capa) => dxf.linea(X(x1), Y(y1), X(x2), Y(y2), capa);
+    // Vista frontal
+    for (const r of [v.D / 2, v.d / 2]) dxf.circulo(X(0), Y(0), r * E, 'CONTORNO');
+    for (const r of [roi, rio]) dxf.circulo(X(0), Y(0), r * E, 'CONTORNO');
+    dxf.circulo(X(0), Y(0), dm / 2 * E, 'EJES');
+    L(-v.D / 2 - 4 / E, 0, v.D / 2 + 4 / E, 0, 'EJES'); L(0, -v.D / 2 - 4 / E, 0, v.D / 2 + 4 / E, 'EJES');
+    dxf.cota(X(-v.D / 2), Y(-v.D / 2), X(v.D / 2), Y(-v.D / 2), -8, 'ØD = ' + fmt(v.D, 0));
+    // Vista lateral en corte (mitad superior e inferior)
+    const gap = Math.max(20, 0.35 * v.D);
+    const sx = v.D / 2 + gap, B = v.B;
+    dxf.rect(X(sx), Y(-v.D / 2), X(sx + B), Y(v.D / 2), 'CONTORNO');
+    for (const s of [1, -1]) {
+      L(sx, s * roi, sx + B, s * roi);
+      L(sx, s * rio, sx + B, s * rio);
+      L(sx, s * v.d / 2, sx + B, s * v.d / 2);
+      dxf.circulo(X(sx + B / 2), Y(s * dm / 2), Dw / 2 * E, 'CONTORNO');
+    }
+    L(sx - 4 / E, 0, sx + B + 4 / E, 0, 'EJES');
+    dxf.cota(X(sx), Y(v.D / 2), X(sx + B), Y(v.D / 2), 6, 'B = ' + fmt(B, 0));
+    dxf.cota(X(sx + B), Y(v.d / 2), X(sx + B), Y(-v.d / 2), 8, 'Ød = ' + fmt(v.d, 0));
+    dxf.texto(X(-v.D / 2), Y(-v.D / 2) - 16, 2.5, `Rodamiento ${this.designacion(v, sel)}  C = ${fmt(v.C, 1)} kN  C0 = ${fmt(v.C0, 1)} kN`);
+  },
+
+  extensionDXF(v) {
+    const gap = Math.max(20, 0.35 * v.D);
+    return [-v.D / 2, -v.D / 2, v.D / 2 + gap + v.B, v.D / 2];
+  },
+};
+
+const MODULOS = { pernos: moduloPernos, escalera: moduloEscalera, pinon: moduloPinon, rodamiento: moduloRodamiento };
 
 /* =====================================================================
    Visor 3D
@@ -1146,7 +1791,7 @@ function crearSelector(def, contenedor) {
     b.innerHTML = (ico ? icono(ico) : '') + `<span>${esc(t)}</span>`;
     b.addEventListener('click', () => {
       ponerSelector(def.id, v);
-      estado.modulo.alCambiarSelector?.(def.id, v, ponerValores);
+      estado.modulo.alCambiarSelector?.(def.id, v, ponerValores, estado.sel);
       actualizar(true);
     });
     grupo.appendChild(b);
@@ -1175,14 +1820,14 @@ function crearCampo(def, contenedor) {
     const n = parseFloat(String(inp.value).replace(',', '.'));
     if (Number.isFinite(n)) { estado.valores[def.id] = n; rg.value = n; }
     estado.crudos[def.id] = inp.value;
-    estado.modulo.alEditarCampo?.(def.id);
+    estado.modulo.alEditarCampo?.(def.id, estado.valores, ponerValores);
     actualizar(false);
   });
   rg.addEventListener('input', () => {
     const dec = Math.max(0, -Math.floor(Math.log10(pasoRg)));
     const n = Number(Number(rg.value).toFixed(dec));
     estado.valores[def.id] = n; estado.crudos[def.id] = String(n); inp.value = n;
-    estado.modulo.alEditarCampo?.(def.id);
+    estado.modulo.alEditarCampo?.(def.id, estado.valores, ponerValores);
     actualizar(false);
   });
 }
@@ -1198,12 +1843,10 @@ function ponerValores(obj) {
 
 /* ---------- Vistas (menú) ---------- */
 function mostrarVista(id) {
+  if (!MODULOS[id]) return;
   estado.vista = id;
-  const esFoto = id === 'foto';
-  $('vista-modulo').hidden = esFoto;
-  $('vista-foto').hidden = !esFoto;
   document.querySelectorAll('.tarjeta-mod[data-vista]').forEach(b => b.classList.toggle('activo', b.dataset.vista === id));
-  if (!esFoto && (!estado.modulo || estado.modulo.id !== id)) cargarModulo(id);
+  if (!estado.modulo || estado.modulo.id !== id) { ultimaGeo = ''; cargarModulo(id); }
   $('panel').scrollTop = 0;
 }
 
@@ -1248,32 +1891,36 @@ function dibujarMateriales() {
   document.querySelectorAll('#trabajos button').forEach(b => b.classList.toggle('activo', b.dataset.valor === t));
   const lista = m.materiales.filter(x => t === 'todos' || x.trabajos.includes(t));
   if (estado.material !== 'manual' && !lista.some(x => x.id === estado.material)) estado.material = lista[0]?.id ?? 'manual';
-  const maxRe = Math.max(...m.materiales.map(x => x.Re));
+  const maxRe = Math.max(1, ...m.materiales.map(x => x.Re ?? 0));
   const cont = $('materiales'); cont.innerHTML = '';
   for (const x of lista) {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'mat' + (estado.material === x.id ? ' activo' : '');
-    b.innerHTML = `<b>${esc(x.nombre)}</b><span class="re">Re ${x.Re} · Rm ${x.Rm} MPa</span>
+    b.innerHTML = x.Re
+      ? `<b>${esc(x.nombre)}</b><span class="re">Re ${x.Re} · Rm ${x.Rm} MPa${x.E ? ' · E ' + Math.round(x.E / 1000) + ' GPa' : ''}</span>
       <span class="barra"><i style="width:${(x.Re / maxRe * 100).toFixed(0)}%"></i></span>
-      <span class="uso">${esc(x.uso)}</span>`;
+      <span class="uso">${esc(x.uso)}</span>`
+      : `<b>${esc(x.nombre)}</b><span class="uso">${esc(x.uso)}</span>`;
     b.addEventListener('click', () => { estado.material = x.id; dibujarMateriales(); actualizar(false); });
     cont.appendChild(b);
   }
   const man = document.createElement('button');
   man.type = 'button'; man.className = 'mat' + (estado.material === 'manual' ? ' activo' : '');
-  man.innerHTML = `<b>✎ Otro material (escribir a mano)</b><span class="re">Re / Rm propios</span>`;
+  man.innerHTML = `<b>✎ Otro material (escribir a mano)</b><span class="re">${m.usaResistencia === false ? 'Nombre propio' : 'Re / Rm / E propios'}</span>`;
   man.addEventListener('click', () => { estado.material = 'manual'; dibujarMateriales(); actualizar(false); });
   cont.appendChild(man);
   $('mat-manual').hidden = estado.material !== 'manual';
+  for (const id of ['mat-re', 'mat-rm', 'mat-e']) $(id).closest('.campo').hidden = m.usaResistencia === false;
 }
 
 function materialActual() {
   if (estado.material === 'manual') {
-    const Re = parseFloat($('mat-re').value), Rm = parseFloat($('mat-rm').value);
+    const Re = parseFloat($('mat-re').value), Rm = parseFloat($('mat-rm').value), Eg = parseFloat($('mat-e').value);
     return {
       nombre: $('mat-nombre').value.trim() || 'Material a mano',
       Re: Number.isFinite(Re) && Re > 0 ? Re : NaN,
       Rm: Number.isFinite(Rm) && Rm > 0 ? Rm : NaN,
+      E: Number.isFinite(Eg) && Eg > 0 ? Eg * 1000 : NaN,
       uso: 'Propiedades ingresadas manualmente.',
     };
   }
@@ -1283,12 +1930,13 @@ function materialActual() {
 /* ---------- Medidas adicionales ---------- */
 function dibujarExtras() {
   const cont = $('extras'); cont.innerHTML = '';
-  $('sec-extras').hidden = estado.extras.length === 0;
+  $('n-extras').textContent = estado.extras.length ? `(${estado.extras.length})` : '';
   estado.extras.forEach((x, i) => {
     const fila = document.createElement('div');
     fila.className = 'extra';
-    fila.innerHTML = `<input value="${esc(x.nombre)}" aria-label="Nombre"><input type="number" step="any" value="${x.valor ?? ''}" aria-label="Valor"><span class="nota" style="margin:0">${esc(x.unidad)}</span><button class="btn-x" title="Quitar">✕</button>`;
-    const [n, v] = fila.querySelectorAll('input');
+    fila.innerHTML = `<input value="${esc(x.nombre)}" aria-label="Nombre"><input type="number" step="any" value="${x.valor ?? ''}" aria-label="Valor"><input value="${esc(x.unidad)}" aria-label="Unidad"><button class="btn-x" title="Quitar">✕</button>`;
+    const [n, v, u] = fila.querySelectorAll('input');
+    u.addEventListener('input', () => { x.unidad = u.value; });
     n.addEventListener('input', () => { x.nombre = n.value; });
     v.addEventListener('input', () => { const f = parseFloat(v.value); x.valor = Number.isFinite(f) ? f : null; });
     fila.querySelector('button').addEventListener('click', () => { estado.extras.splice(i, 1); dibujarExtras(); });
@@ -1306,7 +1954,7 @@ function validar() {
     if (crudo === '' || !Number.isFinite(n)) err[c.id] = 'Ingrese un número.';
     else if (n < c.min || n > c.max) err[c.id] = `Fuera de rango (${c.min} – ${c.max}).`;
   }
-  if (Object.keys(err).length === 0) { m._tipo = estado.sel.tipo; Object.assign(err, m.validar?.(estado.valores) ?? {}); }
+  if (Object.keys(err).length === 0) Object.assign(err, m.validar?.(estado.valores, estado.sel) ?? {});
   for (const c of [...m.campos, ...m.cargas]) {
     const div = $('c-' + c.id); if (!div) continue;
     const visible = !c.solo || c.solo.includes(estado.sel.tipo);
@@ -1352,8 +2000,8 @@ function actualizar(encuadrar) {
 
   // cálculos
   const tabla = $('resultados'); tabla.innerHTML = '';
-  if (!mat || !Number.isFinite(mat.Re) || !Number.isFinite(mat.Rm)) {
-    ponerVeredicto(false, 'Ingrese Re y Rm válidos para el material.');
+  if (!mat || (m.usaResistencia !== false && (!Number.isFinite(mat.Re) || !Number.isFinite(mat.Rm) || !Number.isFinite(mat.E ?? 1)))) {
+    ponerVeredicto(false, 'Ingrese Re, Rm y E válidos para el material.');
     return;
   }
   const r = m.calcular(v, v, mat, estado.sel);
@@ -1371,308 +2019,9 @@ function actualizar(encuadrar) {
     const pos = Math.max(0, Math.min(1, fs / (2 * r.fsMin)));
     $('aguja').style.left = (pos * 100).toFixed(1) + '%';
     $('aguja').style.borderColor = r.ok ? 'var(--ok)' : 'var(--mal)';
-    $('medidor-min').textContent = 'FS mín. ' + fmt(r.fsMin, 1);
+    $('medidor-min').textContent = (r.etqMin ?? 'FS mín. ') + fmt(r.fsMin, 1);
     $('medidor-max').textContent = fmt(2 * r.fsMin, 1) + '+';
   }
-}
-
-/* =====================================================================
-   Foto + IA
-   ===================================================================== */
-const foto = {
-  imagen: null,          // { base64, tipo, url }
-  destino: 'auto',
-  resultado: null,       // respuesta de la IA
-  medidas: [],           // filas editables
-  sinIA: false,
-};
-
-// Módulos que la IA conoce. Los no implementados sirven para identificar la pieza.
-const CATALOGO_IA = {
-  pernos: { nombre: 'Pernos y roscas', listo: true },
-  escalera: { nombre: 'Escalera / plataforma', listo: false },
-  pinon: { nombre: 'Piñón con chavetero', listo: false },
-};
-
-function dibujarDestinos() {
-  const cont = $('ia-destino'); cont.innerHTML = '';
-  for (const [v, t] of [['auto', 'Que decida la IA'], ...Object.entries(CATALOGO_IA).map(([k, x]) => [k, x.nombre])]) {
-    const b = document.createElement('button');
-    b.type = 'button'; b.textContent = t; b.dataset.valor = v;
-    b.classList.toggle('activo', foto.destino === v);
-    b.addEventListener('click', () => { foto.destino = v; dibujarDestinos(); });
-    cont.appendChild(b);
-  }
-}
-
-/** Reduce la imagen (lado mayor 1568 px) y la pasa a JPEG base64. */
-function prepararImagen(fuente) {
-  return new Promise((resolve, reject) => {
-    const procesar = (img, w, h) => {
-      const k = Math.min(1, 1568 / Math.max(w, h));
-      const c = document.createElement('canvas');
-      c.width = Math.round(w * k); c.height = Math.round(h * k);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      const url = c.toDataURL('image/jpeg', 0.85);
-      resolve({ url, tipo: 'image/jpeg', base64: url.split(',')[1] });
-    };
-    if (fuente instanceof HTMLVideoElement) return procesar(fuente, fuente.videoWidth, fuente.videoHeight);
-    const img = new Image();
-    img.onload = () => { procesar(img, img.naturalWidth, img.naturalHeight); URL.revokeObjectURL(img.src); };
-    img.onerror = () => reject(new Error('No se pudo leer la imagen.'));
-    img.src = URL.createObjectURL(fuente);
-  });
-}
-
-async function ponerFoto(fuente) {
-  try {
-    foto.imagen = await prepararImagen(fuente);
-    $('foto-img').src = foto.imagen.url;
-    $('foto-img').hidden = false;
-    $('foto-vacia').hidden = true;
-    $('ia-estado').innerHTML = '';
-  } catch (e) {
-    mostrarEstadoIA('mal', e.message);
-  }
-}
-
-/* Cámara: getUserMedia si existe; si no, el selector de archivos con capture (móviles) */
-let flujoCamara = null;
-async function abrirCamara() {
-  if (!navigator.mediaDevices?.getUserMedia) return $('in-foto-cam').click();
-  try {
-    flujoCamara = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 } }, audio: false });
-    $('cam-video').srcObject = flujoCamara;
-    $('dlg-camara').showModal();
-  } catch (e) {
-    console.warn(e);
-    toast('No se pudo abrir la cámara; elige una imagen.');
-    $('in-foto-cam').click();
-  }
-}
-function cerrarCamara() {
-  flujoCamara?.getTracks().forEach(t => t.stop());
-  flujoCamara = null;
-  if ($('dlg-camara').open) $('dlg-camara').close();
-}
-
-function mostrarEstadoIA(tipo, html) {
-  $('ia-estado').innerHTML = tipo === 'cargando'
-    ? `<div class="cargando"><span class="giro"></span>${html}</div>`
-    : `<div class="aviso ${tipo}">${html}</div>`;
-}
-
-/* Esquema de la respuesta (salida estructurada) */
-const ESQUEMA_IA = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['pieza_identificada', 'modulo_sugerido', 'tipo_pieza', 'confianza', 'observaciones', 'medidas'],
-  properties: {
-    pieza_identificada: { type: 'string' },
-    modulo_sugerido: { type: 'string', enum: ['pernos', 'escalera', 'pinon', 'otro'] },
-    tipo_pieza: { type: 'string', enum: ['perno', 'tuerca', 'conjunto', 'otro'] },
-    confianza: { type: 'string', enum: ['alta', 'media', 'baja'] },
-    observaciones: { type: 'string' },
-    medidas: {
-      type: 'array',
-      items: {
-        type: 'object',
-        additionalProperties: false,
-        required: ['campo', 'nombre', 'simbolo', 'unidad', 'valor_estimado', 'instrumento', 'como_medir'],
-        properties: {
-          campo: { type: 'string' },
-          nombre: { type: 'string' },
-          simbolo: { type: 'string' },
-          unidad: { type: 'string' },
-          valor_estimado: { anyOf: [{ type: 'number' }, { type: 'null' }] },
-          instrumento: { type: 'string' },
-          como_medir: { type: 'string' },
-        },
-      },
-    },
-  },
-};
-
-function promptIA() {
-  const camposPernos = MODULOS.pernos.campos.map(c => `  - "${c.id}": ${c.etiqueta} (${c.uni})`).join('\n');
-  const destino = foto.destino === 'auto' ? 'Decide tú a qué módulo corresponde la pieza.' : `El usuario indica que la pieza corresponde al módulo "${foto.destino}".`;
-  const notas = $('ia-notas').value.trim();
-  return `Eres un asistente de diseño mecánico. Mira la foto de una pieza mecánica real.
-
-Tareas:
-1. Identifica la pieza (nombre técnico en español) y elige el módulo de la herramienta:
-   - "pernos": pernos, tornillos, tuercas, espárragos, varillas roscadas (tipo_pieza: perno, tuerca o conjunto).
-   - "escalera": escaleras, plataformas, peldaños, barandas.
-   - "pinon": piñones, engranajes, ruedas dentadas con chavetero.
-   - "otro": cualquier otra pieza.
-   ${destino}
-2. Lista TODAS las medidas que hay que tomar a la pieza real para modelarla y fabricarla (incluye las de formas irregulares: chaflanes, agujeros, radios, ranuras, etc.).
-3. Para cada medida indica el instrumento (pie de rey, micrómetro, galga de roscas, cinta métrica, transportador…) y cómo medirla, en una frase corta.
-
-Campos del módulo "pernos" (usa exactamente estos ids en "campo" cuando la medida corresponda):
-${camposPernos}
-Si una medida no corresponde a ninguno de esos campos, pon "campo": "adicional".
-
-Reglas para "valor_estimado": estima un valor SOLO si en la foto hay una referencia de tamaño (regla, moneda, escala, marca de rosca legible como "M10"). Si no la hay, usa null. No inventes medidas.
-En "observaciones" explica en 1–3 frases en qué te basaste y qué no se puede saber desde la foto.
-Responde en español. Unidades en mm salvo que corresponda otra.${notas ? `\n\nNotas del usuario: ${notas}` : ''}`;
-}
-
-/* Carga el SDK oficial de Anthropic sólo cuando se necesita (si no hay internet, el resto sigue funcionando) */
-let sdkAnthropic = null;
-async function cargarSDK() {
-  if (!sdkAnthropic) sdkAnthropic = (await import('https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@1.7.0/+esm')).default;
-  return sdkAnthropic;
-}
-
-async function analizarIA() {
-  if (!foto.imagen) return mostrarEstadoIA('mal', 'Primero saca o sube una foto de la pieza.');
-  const clave = $('ia-clave').value.trim();
-  if (!clave) {
-    $('sec-clave').open = true;
-    $('ia-clave').focus();
-    return mostrarEstadoIA('mal', 'Falta la clave de API de Anthropic. También puedes usar <b>Lista estándar sin IA</b>.');
-  }
-  if ($('ia-recordar').checked) almacen.guardar('disenador3d.claveIA', clave);
-
-  $('btn-analizar').disabled = true;
-  mostrarEstadoIA('cargando', 'La IA está mirando la foto… (10–40 s)');
-  let Anthropic;
-  try {
-    Anthropic = await cargarSDK();
-  } catch (e) {
-    console.error(e);
-    $('btn-analizar').disabled = false;
-    return mostrarEstadoIA('mal', 'No se pudo cargar la librería de la IA (¿sin internet?). Usa <b>Lista estándar sin IA</b>.');
-  }
-  try {
-    const cliente = new Anthropic({ apiKey: clave, dangerouslyAllowBrowser: true });
-    const resp = await cliente.beta.messages.create({
-      model: 'claude-opus-5-5',
-      max_tokens: 16000,
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',   // si el modelo rechaza la petición, el servidor reintenta con otro modelo
-      output_config: { effort: 'medium', format: { type: 'json_schema', schema: ESQUEMA_IA } },
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'image', source: { type: 'base64', media_type: foto.imagen.tipo, data: foto.imagen.base64 } },
-          { type: 'text', text: promptIA() },
-        ],
-      }],
-    });
-    if (resp.stop_reason === 'refusal') throw new Error('La IA no pudo analizar esta imagen. Prueba con otra foto.');
-    if (resp.stop_reason === 'max_tokens') throw new Error('La respuesta de la IA quedó incompleta. Inténtalo de nuevo.');
-    const texto = resp.content.filter(b => b.type === 'text').map(b => b.text).join('');
-    const datos = JSON.parse(texto);
-    foto.sinIA = false;
-    mostrarResultadoIA(datos);
-    $('ia-estado').innerHTML = '';
-  } catch (e) {
-    console.error(e);
-    let msg = e.message || String(e);
-    if (e instanceof Anthropic.AuthenticationError) msg = 'La clave de API no es válida.';
-    else if (e instanceof Anthropic.PermissionDeniedError) msg = 'La clave no tiene permiso para usar este modelo.';
-    else if (e instanceof Anthropic.RateLimitError) msg = 'Demasiadas peticiones; espera unos segundos y reintenta.';
-    else if (e instanceof Anthropic.APIConnectionError) msg = 'No hay conexión con la IA (¿sin internet?).';
-    else if (e instanceof SyntaxError) msg = 'La respuesta de la IA no se pudo leer. Reintenta.';
-    mostrarEstadoIA('mal', esc(msg) + '<br>Puedes seguir con <b>Lista estándar sin IA</b>.');
-  } finally {
-    $('btn-analizar').disabled = false;
-  }
-}
-
-/* Sin IA: la lista de medidas del módulo, sin valores (útil sin internet) */
-function plantillaSinIA() {
-  const modId = foto.destino !== 'auto' && CATALOGO_IA[foto.destino]?.listo ? foto.destino : 'pernos';
-  const m = MODULOS[modId];
-  foto.sinIA = true;
-  mostrarResultadoIA({
-    pieza_identificada: m.titulo + ' (lista estándar)',
-    modulo_sugerido: modId,
-    tipo_pieza: 'perno',
-    confianza: null,
-    observaciones: 'Lista de medidas del módulo, sin análisis de la foto. Completa los valores medidos.',
-    medidas: m.campos.map(c => ({
-      campo: c.id, nombre: c.etiqueta, simbolo: c.id, unidad: c.uni, valor_estimado: null,
-      instrumento: c.instrumento ?? '', como_medir: c.comoMedir ?? '',
-    })),
-  });
-}
-
-function mostrarResultadoIA(datos) {
-  foto.resultado = datos;
-  const idsValidos = new Set(MODULOS.pernos.campos.map(c => c.id));
-  foto.medidas = (datos.medidas ?? []).map(x => ({
-    usar: true,
-    campo: idsValidos.has(x.campo) && datos.modulo_sugerido === 'pernos' ? x.campo : 'adicional',
-    nombre: x.nombre || x.simbolo || 'Medida',
-    simbolo: x.simbolo || '',
-    unidad: x.unidad || 'mm',
-    valor: Number.isFinite(x.valor_estimado) ? x.valor_estimado : null,
-    instrumento: x.instrumento || '',
-    como: x.como_medir || '',
-  }));
-  const mod = CATALOGO_IA[datos.modulo_sugerido];
-  const conf = datos.confianza ? `<span class="conf ${esc(datos.confianza)}">confianza ${esc(datos.confianza)}</span>` : '';
-  $('ia-ident').innerHTML = `<h4>${esc(datos.pieza_identificada)}${conf}</h4>
-    <div class="nota" style="margin:0 0 6px">Módulo: <b>${esc(mod?.nombre ?? 'Sin módulo específico')}</b>${mod && !mod.listo ? ' (aún no disponible: las medidas quedan como adicionales)' : ''}${foto.sinIA ? ' · <b>sin IA</b>' : ''}</div>
-    <div class="nota" style="margin:0">${esc(datos.observaciones)}</div>`;
-  $('ia-resultado').hidden = false;
-  dibujarMedidasIA();
-  $('ia-resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function dibujarMedidasIA() {
-  const cont = $('ia-medidas'); cont.innerHTML = '';
-  const opciones = [...MODULOS.pernos.campos.map(c => [c.id, '→ ' + c.etiqueta]), ['adicional', '→ Medida adicional']];
-  foto.medidas.forEach((x, i) => {
-    const d = document.createElement('div');
-    d.className = 'med-ia' + (x.usar ? '' : ' apagada');
-    d.innerHTML = `<div class="l1">
-        <input type="checkbox" ${x.usar ? 'checked' : ''} title="Usar esta medida">
-        <input class="nom" value="${esc(x.nombre)}" aria-label="Nombre de la medida">
-        <input class="val" type="number" step="any" placeholder="medir" value="${x.valor ?? ''}" aria-label="Valor">
-        <span class="nota" style="margin:0">${esc(x.unidad)}</span>
-        <button class="btn-x" title="Quitar">✕</button>
-      </div>
-      <div class="l2">
-        <select aria-label="Campo de destino">${opciones.map(([v, t]) => `<option value="${v}" ${v === x.campo ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>
-        <input class="ins" value="${esc(x.instrumento)}" placeholder="Instrumento" aria-label="Instrumento">
-      </div>
-      ${x.como ? `<div class="como">📏 ${esc(x.como)}</div>` : ''}`;
-    const [chk, nom, val] = d.querySelectorAll('.l1 input');
-    chk.addEventListener('change', () => { x.usar = chk.checked; d.classList.toggle('apagada', !x.usar); });
-    nom.addEventListener('input', () => { x.nombre = nom.value; });
-    val.addEventListener('input', () => { const f = parseFloat(val.value.replace(',', '.')); x.valor = Number.isFinite(f) ? f : null; });
-    d.querySelector('select').addEventListener('change', e => { x.campo = e.target.value; });
-    d.querySelector('.ins').addEventListener('input', e => { x.instrumento = e.target.value; });
-    d.querySelector('.btn-x').addEventListener('click', () => { foto.medidas.splice(i, 1); dibujarMedidasIA(); });
-    cont.appendChild(d);
-  });
-}
-
-function aplicarMedidasIA() {
-  const r = foto.resultado;
-  if (!r) return;
-  const modId = CATALOGO_IA[r.modulo_sugerido]?.listo ? r.modulo_sugerido : 'pernos';
-  const usadas = foto.medidas.filter(x => x.usar);
-  mostrarVista(modId);
-  cargarModulo(modId);
-  const m = MODULOS[modId];
-  if (r.tipo_pieza && m.selectores.find(s => s.id === 'tipo')?.opciones.some(o => o[0] === r.tipo_pieza)) ponerSelector('tipo', r.tipo_pieza);
-  const valores = {};
-  for (const x of usadas) {
-    const c = m.campos.find(c => c.id === x.campo);
-    if (c && Number.isFinite(x.valor)) valores[c.id] = x.valor;
-  }
-  if (Object.keys(valores).length) { ponerValores(valores); ponerSelector('norma', 'libre'); }
-  estado.extras = usadas.filter(x => x.campo === 'adicional').map(x => ({ nombre: x.nombre, valor: x.valor, unidad: x.unidad }));
-  dibujarExtras();
-  ultimaGeo = '';
-  actualizar(true);
-  const n = Object.keys(valores).length;
-  toast(`${n} medida${n === 1 ? '' : 's'} aplicada${n === 1 ? '' : 's'}` + (estado.extras.length ? ` · ${estado.extras.length} adicional(es)` : ''));
 }
 
 /* ---------- Numeración correlativa ---------- */
@@ -1718,7 +2067,7 @@ function escalaPlano() {
   const { W, H, mg, cajH } = HOJA;
   const [x0, y0, x1, y1] = estado.modulo.extensionDXF(estado.valores, estado.sel);
   const anchoUtil = W - 2 * mg - 40, altoUtil = H - 2 * mg - cajH - 30;
-  const escalas = [[10, '10:1'], [5, '5:1'], [2, '2:1'], [1, '1:1'], [0.5, '1:2'], [0.2, '1:5'], [0.1, '1:10'], [0.05, '1:20']];
+  const escalas = [[10, '10:1'], [5, '5:1'], [2, '2:1'], [1, '1:1'], [0.5, '1:2'], [0.2, '1:5'], [0.1, '1:10'], [0.05, '1:20'], [0.04, '1:25'], [0.02, '1:50'], [0.01, '1:100']];
   let [E, etiqueta] = escalas[escalas.length - 1];
   for (const [e, t] of escalas) { if ((x1 - x0) * e <= anchoUtil && (y1 - y0) * e <= altoUtil) { E = e; etiqueta = t; break; } }
   return { E, etiqueta, x0, y0, x1, y1, anchoUtil, altoUtil };
@@ -1776,7 +2125,7 @@ $('caj-autor').value = almacen.leer('disenador3d.autor', '');
 $('caj-proyecto').value = almacen.leer('disenador3d.proyecto', '');
 $('caj-autor').addEventListener('input', e => almacen.guardar('disenador3d.autor', e.target.value));
 $('caj-proyecto').addEventListener('input', e => almacen.guardar('disenador3d.proyecto', e.target.value));
-for (const id of ['mat-nombre', 'mat-re', 'mat-rm']) $(id).addEventListener('input', () => actualizar(false));
+for (const id of ['mat-nombre', 'mat-re', 'mat-rm', 'mat-e']) $(id).addEventListener('input', () => actualizar(false));
 
 $('menu').addEventListener('click', e => {
   const b = e.target.closest('button[data-vista]');
@@ -1789,38 +2138,16 @@ $('btn-encuadrar').addEventListener('click', encuadrarCamara);
 $('btn-girar').addEventListener('click', e => { visor.girar = !visor.girar; e.currentTarget.classList.toggle('activo', visor.girar); });
 $('btn-alambre').addEventListener('click', e => { visor.alambre = !visor.alambre; aplicarAlambre(); e.currentTarget.classList.toggle('activo', visor.alambre); });
 
-// Foto + IA
-$('btn-subir').addEventListener('click', () => $('in-foto').click());
-$('btn-camara').addEventListener('click', abrirCamara);
-for (const id of ['in-foto', 'in-foto-cam']) $(id).addEventListener('change', e => { const f = e.target.files?.[0]; if (f) ponerFoto(f); e.target.value = ''; });
-$('cam-cancelar').addEventListener('click', cerrarCamara);
-$('dlg-camara').addEventListener('close', cerrarCamara);
-$('cam-capturar').addEventListener('click', async () => { await ponerFoto($('cam-video')); cerrarCamara(); });
-const zona = $('zona-foto');
-zona.addEventListener('click', () => { if (!foto.imagen) $('in-foto').click(); });
-zona.addEventListener('dragover', e => { e.preventDefault(); zona.classList.add('encima'); });
-zona.addEventListener('dragleave', () => zona.classList.remove('encima'));
-zona.addEventListener('drop', e => {
-  e.preventDefault(); zona.classList.remove('encima');
-  const f = [...(e.dataTransfer?.files ?? [])].find(f => f.type.startsWith('image/'));
-  if (f) ponerFoto(f);
+$('btn-extra').addEventListener('click', () => {
+  estado.extras.push({ nombre: 'Medida ' + (estado.extras.length + 1), valor: null, unidad: 'mm' });
+  dibujarExtras();
+  $('extras').lastElementChild?.querySelector('input')?.select();
 });
-$('btn-analizar').addEventListener('click', analizarIA);
-$('btn-plantilla').addEventListener('click', plantillaSinIA);
-$('btn-agregar-med').addEventListener('click', () => {
-  foto.medidas.push({ usar: true, campo: 'adicional', nombre: 'Nueva medida', simbolo: '', unidad: 'mm', valor: null, instrumento: '', como: '' });
-  dibujarMedidasIA();
-});
-$('btn-aplicar').addEventListener('click', aplicarMedidasIA);
-const claveGuardada = almacen.leer('disenador3d.claveIA', '');
-if (claveGuardada) { $('ia-clave').value = claveGuardada; $('ia-recordar').checked = true; }
-$('ia-recordar').addEventListener('change', e => { if (!e.target.checked) almacen.guardar('disenador3d.claveIA', ''); });
-dibujarDestinos();
 
 iniciarVisor();
 iniciarNumeracion();
 mostrarVista('pernos');
-window.__app = { estado, foto, exportarDXF, exportarSTL, mostrarResultadoIA }; // para pruebas
+window.__app = { estado, exportarDXF, exportarSTL, mostrarVista }; // para pruebas
 </script>
 
 <noscript>Esta herramienta necesita JavaScript.</noscript>

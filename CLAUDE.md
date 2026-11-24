@@ -35,35 +35,40 @@ y exportarlas a programas CAD.
 5. **Cajetín** con numeración correlativa automática (PZ-0001, PZ-0002…). El
    contador se guarda en el navegador (`localStorage`, siempre dentro de
    try/catch) y aparece en pantalla, en el DXF y en el nombre de los archivos.
-6. **Foto + IA** ✅: sacar (cámara) o subir una foto; la IA (Claude, modelo
-   `claude-opus-5-5`, SDK oficial `@anthropic-ai/sdk` cargado desde CDN sólo al
-   pulsar "Analizar") identifica la pieza y propone qué medidas tomar, con qué
-   instrumento y, si hay referencia de escala, un valor estimado. Respuesta en
-   JSON con salida estructurada (`output_config.format`). El usuario edita,
-   desmarca o agrega medidas y las aplica al módulo; las que no corresponden a un
-   campo quedan como "medidas adicionales" y se anotan en el DXF.
-   - La clave de API la escribe el usuario en la interfaz (opcionalmente se
-     guarda en `localStorage`). Nunca escribir una clave en el código.
-   - Botón "Lista estándar sin IA" como respaldo sin internet para la defensa.
-7. **Módulos**, todos con sus cálculos:
-   - **Pernos y roscas** internas/externas (perno, tuerca, conjunto):
+6. **Foto + IA**: descartado por ahora (la API de Claude es de pago). Se
+   quitó del código. Para piezas irregulares hay una sección manual de
+   "Medidas adicionales" en cada módulo, que se anota en el DXF.
+7. **Módulos**, todos con sus cálculos (✅ = implementado):
+   - ✅ **Pernos y roscas** internas/externas (perno, tuerca, conjunto):
      área resistente, tracción, corte, von Mises, precarga, par de apriete,
-     longitud mínima de rosca acoplada. ✅ Implementado.
-   - **Escalera / plataforma**: diseñada para una persona de 90 kg más
-     herramientas (pendiente).
-   - **Piñón de engranaje con chavetero** (pendiente).
+     longitud mínima de rosca acoplada.
+   - ✅ **Escalera / plataforma** (escalera + plataforma, solo escalera, solo
+     plataforma) en tubo estructural, para una persona de 90 kg más
+     herramientas: peldaños, largueros, vigas y travesaños (flexión y flecha),
+     patas (pandeo de Euler), poste de baranda (OSHA 890 N), ergonomía
+     (Blondel, inclinación 30–50°).
+   - ✅ **Piñón con chavetero** (plano o con cubo): perfil evolvente α = 20°,
+     diámetros, Lewis + Barth, chaveta DIN 6885 (corte y aplastamiento),
+     espesor de llanta AGMA (m_B ≥ 1,2), socavado y ancho de cara.
+   - ✅ **Rodamientos** rígidos de bolas series 60/62/63 (catálogo aprox.):
+     carga equivalente (X, Y), vida L10 / L10h (ISO 281), C requerida,
+     seguridad estática s₀.
+   - Ideas siguientes: eje (flexión + torsión, ASME), soldaduras, poleas.
 
 ## Arquitectura
 
 - `index.html`: interfaz (menú lateral de tarjetas, panel con secciones
-  plegables, selectores con iconos/fichas, deslizadores, visor 3D, cajetín,
-  vista Foto + IA) y todo el código.
+  plegables, selectores con iconos/fichas, deslizadores, visor 3D, cajetín)
+  y todo el código.
 - Cada módulo es un objeto registrado en `MODULOS` con:
   - `selectores`: opciones `[valor, texto, icono]`, `estilo: 'segmentos' | 'fichas'`.
   - `campos`: definición de las medidas (id, etiqueta, unidad, min, max, valor,
     `rmax` del deslizador, `solo` = tipos de pieza donde aplica, `instrumento` y
     `comoMedir` para la lista sin IA).
-  - `materiales`: lista de materiales con su uso recomendado.
+  - `materiales`: lista con `Re`, `Rm` (MPa), `E` (MPa) y uso recomendado.
+    `usaResistencia: false` si el cálculo no usa Re/Rm (rodamientos).
+  - `validar(medidas, sel)`, `alCambiarSelector(id, valor, ponerValores, sel)`,
+    `alEditarCampo(id, medidas, ponerValores)`.
   - `construir3D(medidas)`: devuelve un `THREE.Group` en milímetros.
   - `calcular(medidas, material)`: devuelve filas de resultados y veredicto.
   - `dibujarDXF(medidas, dxf)`: dibuja las vistas 2D.
