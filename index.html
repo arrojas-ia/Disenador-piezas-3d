@@ -363,6 +363,7 @@
     <div class="logo">⚙️</div>
     <div><h1>Diseñador de Piezas 3D</h1><small>medidas manuales · cálculo · exportación CAD</small></div>
   </div>
+  <button class="sec" id="btn-abrir-dxf" title="Abrir un plano DXF de AutoCAD o SAP2000"><svg class="ico"><use href="#i-importar"/></svg>Abrir DXF</button>
   <button class="sec" id="btn-nueva" title="Asigna el siguiente número correlativo"><svg class="ico"><use href="#i-mas"/></svg>Nueva pieza</button>
   <button id="btn-dxf" title="Plano 2D para AutoCAD">Exportar DXF</button>
   <button id="btn-stl" title="Malla 3D para SolidWorks">Exportar STL</button>
@@ -3437,12 +3438,15 @@ function leerDXF(texto) {
   return { header, bloques, entidades };
 }
 
+/** Número de un DXF; acepta coma decimal ("0,25"), como exportan algunos programas en español. */
+const numDXF = (v) => parseFloat(String(v ?? '').trim().replace(/^(-?\d*),(\d+)$/, '$1.$2').replace(/^(-?\d*),(\d+)(E[-+]?\d+)$/i, '$1.$2$3'));
+
 function codigosDXF(datos) {
   const primero = (c) => datos.find(p => p[0] === c)?.[1];
   return {
     s: (c, d = '') => primero(c) ?? d,
-    n: (c, d = 0) => { const x = parseFloat(primero(c)); return Number.isFinite(x) ? x : d; },
-    todos: (c) => datos.filter(p => p[0] === c).map(p => parseFloat(p[1])),
+    n: (c, d = 0) => { const x = numDXF(primero(c)); return Number.isFinite(x) ? x : d; },
+    todos: (c) => datos.filter(p => p[0] === c).map(p => numDXF(p[1])),
   };
 }
 
@@ -3492,9 +3496,9 @@ function primitivasDXF(dxf) {
         case 'LWPOLYLINE': {
           const vs = []; const z = g.n(38);
           for (const [c, v] of e.datos) {
-            if (c === 10) vs.push({ x: parseFloat(v), y: 0, b: 0 });
-            else if (c === 20 && vs.length) vs[vs.length - 1].y = parseFloat(v);
-            else if (c === 42 && vs.length) vs[vs.length - 1].b = parseFloat(v);
+            if (c === 10) vs.push({ x: numDXF(v), y: 0, b: 0 });
+            else if (c === 20 && vs.length) vs[vs.length - 1].y = numDXF(v);
+            else if (c === 42 && vs.length) vs[vs.length - 1].b = numDXF(v);
           }
           const cerrada = (g.n(70) & 1) === 1;
           const pts = [];
@@ -3515,6 +3519,12 @@ function primitivasDXF(dxf) {
             pts.push(...arcoBulge([a.x, a.y, a.z], [b.x, b.y, b.z], a.b));
           }
           add(pts.map(p => P(...p)), cerrada); break;
+        }
+        case '3DFACE': {
+          const q = [[10, 20, 30], [11, 21, 31], [12, 22, 32], [13, 23, 33]].map(([a, b, c]) => P(g.n(a), g.n(b), g.n(c)));
+          const iguales = (u, w) => u.every((x, j) => Math.abs(x - w[j]) < 1e-9);
+          if (iguales(q[2], q[3])) q.pop();
+          add(q, true, { cara: true }); break;
         }
         case 'ELLIPSE': {
           const cx = g.n(10), cy = g.n(20), mx = g.n(11), my = g.n(21), k = g.n(40, 1);
@@ -3634,12 +3644,13 @@ const EJEMPLOS_DXF = {
   ]) },
   estructura: { nombre: 'ejemplo_portico.dxf', texto: () => {
     const e = [];
-    for (const z of [0, 2500]) {
-      e.push(ln('BARRAS', 0, 0, z, 0, 3000, z), ln('BARRAS', 4000, 0, z, 4000, 3000, z), ln('BARRAS', 0, 3000, z, 4000, 3000, z),
-        ln('BARRAS', 0, 2400, z, 600, 3000, z), ln('BARRAS', 4000, 2400, z, 3400, 3000, z));
+    // convención 3D de AutoCAD / SAP2000: Z hacia arriba; dos pórticos en y = 0 e y = 2500
+    for (const y of [0, 2500]) {
+      e.push(ln('BARRAS', 0, y, 0, 0, y, 3000), ln('BARRAS', 4000, y, 0, 4000, y, 3000), ln('BARRAS', 0, y, 3000, 4000, y, 3000),
+        ln('BARRAS', 0, y, 2400, 600, y, 3000), ln('BARRAS', 4000, y, 2400, 3400, y, 3000));
     }
-    for (const x of [0, 2000, 4000]) e.push(ln('BARRAS', x, 3000, 0, x, 3000, 2500));
-    e.push(ln('BARRAS', 0, 0, 0, 0, 3000, 2500), ln('BARRAS', 4000, 0, 0, 4000, 3000, 2500));
+    for (const x of [0, 2000, 4000]) e.push(ln('BARRAS', x, 0, 3000, x, 2500, 3000));
+    e.push(ln('BARRAS', 0, 0, 0, 0, 2500, 3000), ln('BARRAS', 4000, 0, 0, 4000, 2500, 3000));
     return dxfEjemplo(e);
   } },
 };
@@ -3680,8 +3691,8 @@ const moduloImportar = {
       opciones: [['auto', 'Automático ($INSUNITS)'], ['mm', 'mm'], ['cm', 'cm'], ['m', 'm'], ['in', 'pulgadas']] },
     { id: 'eje', etiqueta: 'Eje de revolución', estilo: 'fichas', valor: 'linea', visible: (s) => s.modo === 'revolucion',
       opciones: [['linea', 'Línea de eje del dibujo'], ['abajo', 'Borde inferior (horizontal)'], ['izquierda', 'Borde izquierdo (vertical)'], ['origen_x', 'Eje X del dibujo'], ['origen_y', 'Eje Y del dibujo']] },
-    { id: 'plano', etiqueta: 'El dibujo es una…', estilo: 'fichas', valor: 'elevacion', visible: esEstr,
-      opciones: [['elevacion', 'Elevación (Y hacia arriba)'], ['planta', 'Planta (XY = piso)']] },
+    { id: 'plano', etiqueta: 'Dirección vertical del dibujo', estilo: 'fichas', valor: 'auto', visible: esEstr,
+      opciones: [['auto', 'Automática'], ['y', 'Y hacia arriba (elevación 2D)'], ['z', 'Z hacia arriba (3D, SAP2000, planta)']] },
     ...moduloEscalera.selectores.filter(s => ['seccion', 'perfil', 'apoyo'].includes(s.id))
       .map(s => ({ ...s, visible: esEstr, valor: { seccion: 'I', perfil: 'IPE 160' }[s.id] ?? s.valor })),
   ],
@@ -3714,6 +3725,7 @@ const moduloImportar = {
   alCambiarSelector(id, valor, ponerValores, sel) {
     if (['seccion', 'perfil'].includes(id)) moduloEscalera.alCambiarSelector(id, valor, ponerValores, sel);
     if (id === 'modo' && !this.importado?.propio) this.cargarTexto(EJEMPLOS_DXF[valor].texto(), EJEMPLOS_DXF[valor].nombre, false);
+    setTimeout(() => this.dibujarPanel(), 0);
   },
   alEditarCampo(id) { if (['ph', 'pb', 'pt', 'pf'].includes(id)) ponerSelector('perfil', 'libre'); },
   claveExtra() { return this.importado ? this.importado.version : 0; },
@@ -3728,7 +3740,10 @@ const moduloImportar = {
       capas[p.capa] ??= { n: 0, usar: !CAPA_IGNORADA.test(p.capa), eje: CAPA_EJE.test(p.capa) };
       capas[p.capa].n++;
     }
-    this.importado = { nombre, dxf, prims, capas, propio, version: (this.importado?.version ?? 0) + 1 };
+    let mn = [Infinity, Infinity, Infinity], mx = [-Infinity, -Infinity, -Infinity];
+    for (const p of prims) for (const q of p.pts) for (let j = 0; j < 3; j++) { mn[j] = Math.min(mn[j], q[j] ?? 0); mx[j] = Math.max(mx[j], q[j] ?? 0); }
+    const extension = Math.max(mx[0] - mn[0], mx[1] - mn[1], mx[2] - mn[2]);
+    this.importado = { nombre, dxf, prims, capas, propio, extension, version: (this.importado?.version ?? 0) + 1 };
     this.dibujarPanel();
   },
 
@@ -3744,19 +3759,7 @@ const moduloImportar = {
       <div class="etq-grupo">Capas del dibujo <span style="font-weight:400;text-transform:none">(toca para usar u omitir)</span></div>
       <div class="fichas" id="dxf-capas"></div>
       <button type="button" class="claro" id="btn-dxf-ejemplo" style="margin-top:8px">Volver al ejemplo</button>`;
-    const abrir = async (f) => {
-      if (!f) return;
-      try {
-        if (/\.dwg$/i.test(f.name)) throw new Error('Los archivos DWG no se pueden leer directamente. En AutoCAD use Guardar como → DXF (o ODA File Converter) y abra el DXF.');
-        this.cargarTexto(await f.text(), f.name, true);
-        ultimaGeo = ''; actualizar(true);
-        toast('Plano cargado: ' + f.name);
-      } catch (e) {
-        console.error(e);
-        $('dxf-info').innerHTML = `<span style="color:var(--mal)">${esc(e.message)}</span>`;
-        toast('No se pudo abrir el plano.');
-      }
-    };
+    const abrir = (f) => this.abrirArchivo(f);
     $('btn-dxf-abrir').addEventListener('click', () => $('in-dxf').click());
     $('in-dxf').addEventListener('change', (e) => { abrir(e.target.files?.[0]); e.target.value = ''; });
     const z = $('zona-dxf');
@@ -3772,11 +3775,33 @@ const moduloImportar = {
     this.dibujarPanel();
   },
 
+  async abrirArchivo(f) {
+    if (!f) return;
+    try {
+      if (/\.dwg$/i.test(f.name)) throw new Error('Los archivos DWG no se pueden leer directamente. En AutoCAD use Guardar como → DXF (o ODA File Converter) y abra el DXF.');
+      this.cargarTexto(await f.text(), f.name, true);
+      const modo = this.sugerirModo();
+      if (modo && modo !== estado.sel.modo) { ponerSelector('modo', modo); redibujarSelectores(); }
+      this.dibujarPanel();
+      ultimaGeo = ''; actualizar(true);
+      toast('Plano cargado: ' + f.name + (modo === 'estructura' ? ' · modo estructura de barras' : ''));
+    } catch (e) {
+      console.error(e);
+      const info = $('dxf-info');
+      if (info) info.innerHTML = `<span style="color:var(--mal)">${esc(e.message)}</span>`;
+      toast('No se pudo abrir el plano: ' + e.message);
+    }
+  },
+
   dibujarPanel() {
     const imp = this.importado, info = $('dxf-info'), capas = $('dxf-capas');
     if (!imp || !info || !capas) return;
     const nEnt = imp.prims.length;
-    info.innerHTML = `<b>${esc(imp.nombre)}</b>${imp.propio ? '' : ' (ejemplo)'} · ${nEnt} elementos · ${Object.keys(imp.capas).length} capa(s)`;
+    const u = UNIDADES_DXF[imp.dxf.header.insunits];
+    const uTxt = estado.sel.unidades !== 'auto' ? `unidades: ${estado.sel.unidades}` : u ? `unidades: ${u[0]}`
+      : `unidades: ${this.unidadSupuesta(estado.sel) === 1000 ? 'm' : 'mm'} (supuestas: el archivo no las indica)`;
+    const nCaras = imp.prims.filter(p => p.cara).length;
+    info.innerHTML = `<b>${esc(imp.nombre)}</b>${imp.propio ? '' : ' (ejemplo)'} · ${nEnt} elementos${nCaras ? ` (${nCaras} caras 3D)` : ''} · ${Object.keys(imp.capas).length} capa(s) · ${uTxt}`;
     capas.innerHTML = '';
     for (const [nombre, c] of Object.entries(imp.capas)) {
       const b = document.createElement('button');
@@ -3789,11 +3814,32 @@ const moduloImportar = {
     }
   },
 
+  /** Sin $INSUNITS: una estructura de menos de 200 unidades de largo está casi seguro en metros (SAP2000, ETABS…). */
+  unidadSupuesta(sel) {
+    const imp = this.importado;
+    return sel.modo === 'estructura' && imp?.extension > 0 && imp.extension < 200 ? 1000 : 1;
+  },
+  /** Modo recomendado para un archivo: barras si casi todo son líneas sueltas o hay capas de pórticos. */
+  sugerirModo() {
+    const pr = this.importado.prims;
+    const lineas = pr.filter(p => p.linea).length, cerradas = pr.filter(p => p.cerrada && !p.cara).length;
+    const capasBarras = pr.some(p => /FRAME|BARRA|ESTRUC|BEAM|COLUM|VIGA|MEMBER/i.test(p.capa));
+    const es3D = pr.some(p => p.pts.some(q => Math.abs(q[2] ?? 0) > 1e-9));
+    if (capasBarras || (es3D && cerradas === 0)) return 'estructura';
+    if (lineas > 30 && lineas >= 0.8 * pr.length && cerradas === 0) {
+      // muchas líneas sueltas: si no forman contornos cerrados, es una estructura de barras
+      const usables = pr.filter(p => this.importado.capas[p.capa]?.usar && !this.importado.capas[p.capa]?.eje && !p.cara);
+      const ext = this.importado.extension || 1;
+      if (!encadenar(usables, Math.max(1e-6, ext * 1e-4)).cerrados.length) return 'estructura';
+    }
+    return null;
+  },
+
   /* ---------- Procesamiento geométrico ---------- */
   escala(sel, v) {
     const imp = this.importado;
     const porSel = { mm: 1, cm: 10, m: 1000, in: 25.4 }[sel.unidades];
-    const auto = UNIDADES_DXF[imp?.dxf.header.insunits]?.[1] ?? 1;
+    const auto = UNIDADES_DXF[imp?.dxf.header.insunits]?.[1] ?? this.unidadSupuesta(sel);
     return (sel.unidades === 'auto' ? auto : porSel) * (v.esc || 1);
   },
 
@@ -3804,11 +3850,12 @@ const moduloImportar = {
     const usar = imp.prims.filter(p => imp.capas[p.capa]?.usar && !imp.capas[p.capa]?.eje);
     const ejes = imp.prims.filter(p => imp.capas[p.capa]?.eje && p.pts.length === 2);
     const esc3 = (q) => [q[0] * k, q[1] * k, (q[2] ?? 0) * k];
-    const prims = usar.map(p => ({ ...p, pts: p.pts.map(esc3) }));
-    let xs = [], ys = [], zs = [];
-    for (const p of prims) for (const q of p.pts) { xs.push(q[0]); ys.push(q[1]); zs.push(q[2]); }
-    if (!xs.length) return { vacio: true };
-    const caja = { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys), z0: Math.min(...zs), z1: Math.max(...zs) };
+    const prims = usar.filter(p => sel.modo === 'estructura' || !p.cara).map(p => ({ ...p, pts: p.pts.map(esc3) }));
+    const caja = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity, z0: Infinity, z1: -Infinity };
+    for (const p of prims) for (const [x, y, z] of p.pts) {
+      if (x < caja.x0) caja.x0 = x; if (x > caja.x1) caja.x1 = x; if (y < caja.y0) caja.y0 = y; if (y > caja.y1) caja.y1 = y; if (z < caja.z0) caja.z0 = z; if (z > caja.z1) caja.z1 = z;
+    }
+    if (!Number.isFinite(caja.x0)) return { vacio: true };
     const diag = Math.hypot(caja.x1 - caja.x0, caja.y1 - caja.y0, caja.z1 - caja.z0) || 1;
     const out = { k, caja, prims, ejes: ejes.map(p => ({ ...p, pts: p.pts.map(esc3) })), diag };
     if (sel.modo === 'estructura') return out;
@@ -3852,11 +3899,23 @@ const moduloImportar = {
     return e;
   },
 
+  /** Z arriba si el usuario lo pide, o si el dibujo no usa Y (pórticos en el plano XZ) o es 3D (convención de AutoCAD/SAP2000). */
+  zArriba(sel, g) {
+    if (sel.plano === 'z') return true;
+    if (sel.plano === 'y') return false;
+    const ry = g.caja.y1 - g.caja.y0, rz = g.caja.z1 - g.caja.z0, tol = g.diag * 1e-6;
+    return rz > tol;
+  },
+  mapaVertical(sel, g) {
+    const { x0, y0, z0 } = g.caja;
+    return this.zArriba(sel, g) ? ([x, y, z]) => V3(x - x0, z - z0, -(y - y0)) : ([x, y, z]) => V3(x - x0, y - y0, z - z0);
+  },
+
   barras(v, sel, g) {
     const lista = [];
-    const mapa = sel.plano === 'planta' ? ([x, y, z]) => V3(x - g.caja.x0, z - g.caja.z0, -(y - g.caja.y0)) : ([x, y, z]) => V3(x - g.caja.x0, y - g.caja.y0, z - g.caja.z0);
+    const mapa = this.mapaVertical(sel, g);
     for (const p of g.prims) {
-      if (p.circulo) continue;
+      if (p.circulo || p.cara) continue;
       const pts = p.cerrada ? [...p.pts, p.pts[0]] : p.pts;
       for (let k = 0; k + 1 < pts.length; k++) {
         const a = mapa(pts[k]), b = mapa(pts[k + 1]);
@@ -3909,6 +3968,19 @@ const moduloImportar = {
       const sec = moduloEscalera.seccion(v, sel);
       const forma = aForma(sec.contorno, sec.huecos);
       const acero = new THREE.MeshStandardMaterial({ color: 0x2f6db5, metalness: 0.4, roughness: 0.45 });
+      const caras = g.prims.filter(p => p.cara);
+      if (caras.length) {
+        const mapa = this.mapaVertical(sel, g), pos = [];
+        for (const c of caras) {
+          const q = c.pts.map(mapa);
+          pos.push(...q[0].toArray(), ...q[1].toArray(), ...q[2].toArray());
+          if (q.length === 4) pos.push(...q[0].toArray(), ...q[2].toArray(), ...q[3].toArray());
+        }
+        const gc = new THREE.BufferGeometry();
+        gc.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+        gc.computeVertexNormals();
+        grupo.add(new THREE.Mesh(gc, new THREE.MeshStandardMaterial({ color: 0xb9c2cc, metalness: 0.1, roughness: 0.8, side: THREE.DoubleSide, transparent: true, opacity: 0.55 })));
+      }
       const nudos = new Map();
       for (const [a, b] of this.barras(v, sel, g)) {
         barraPerfil(grupo, acero, a, b, forma);
@@ -4566,6 +4638,16 @@ $('menu').addEventListener('click', e => {
   if (b && !b.disabled) mostrarVista(b.dataset.vista);
 });
 $('btn-nueva').addEventListener('click', nuevaPieza);
+$('btn-abrir-dxf').addEventListener('click', () => { mostrarVista('importar'); $('in-dxf')?.click(); });
+// soltar un DXF en cualquier parte de la página lo abre en el módulo de importación
+window.addEventListener('dragover', (e) => { if ([...(e.dataTransfer?.items ?? [])].some(i => i.kind === 'file')) e.preventDefault(); });
+window.addEventListener('drop', (e) => {
+  const f = [...(e.dataTransfer?.files ?? [])].find(x => /\.(dxf|dwg)$/i.test(x.name));
+  if (!f) return;
+  e.preventDefault();
+  mostrarVista('importar');
+  moduloImportar.abrirArchivo(f);
+});
 $('btn-dxf').addEventListener('click', () => { try { exportarDXF(); } catch (e) { console.error(e); toast('Error al exportar DXF.'); } });
 $('btn-stl').addEventListener('click', () => { try { exportarSTL(); } catch (e) { console.error(e); toast('Error al exportar STL.'); } });
 $('btn-encuadrar').addEventListener('click', encuadrarCamara);

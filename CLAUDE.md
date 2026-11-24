@@ -88,6 +88,13 @@ y exportarlas a programas CAD.
      (cada línea 2D/3D es una barra del perfil elegido; peso, lista de corte,
      viga más larga y columnas). Ejemplos incluidos; archivos de prueba en
      `ejemplos/`.
+     También lee DXF exportados por SAP2000/ETABS: coma decimal ("0,1"),
+     caras 3DFACE (placas, se muestran semitransparentes), sin $INSUNITS
+     (estructuras < 200 unidades se suponen en metros) y Z hacia arriba
+     (detección automática de la vertical). El modo se sugiere solo al abrir
+     (barras si hay capas FRAME/VIGA/…, si es 3D o si las líneas no cierran
+     contornos). Botón "Abrir DXF" en la cabecera y soltar el archivo en
+     cualquier parte de la página.
    - Ideas siguientes: eje (flexión + torsión, ASME), cadenas y piñones de
      cadena, resortes, engranajes cónicos helicoidales.
 
