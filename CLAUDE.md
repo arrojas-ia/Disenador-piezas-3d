@@ -29,6 +29,13 @@ y exportarlas a programas CAD.
    - AutoCAD: **DXF** (R12/AC1009, unidades mm, capas, plano 2D con vistas,
      cotas y cajetín).
    - SolidWorks: **STL** (malla 3D en mm). **STEP** queda como mejora futura.
+   - **PDF** (vectorial, generado sin librerías): página 1 = el mismo plano que
+     el DXF (capas con color, grosor y tipo de línea ISO 128); página 2 =
+     memoria de cálculo (captura 3D, datos de entrada, resultados con marca
+     verde/roja y veredicto). Letras griegas y ≥ se transcriben (Helvetica).
+   - El plano también se ve en la página: selector **3D | Plano 2D** del visor
+     (SVG con zoom por rueda, arrastre y doble clic para ver todo); se
+     actualiza con cada cambio. `construirPlano()` arma la lámina común.
 4. **Material**: elegir de una lista filtrada según el trabajo que soporta la
    pieza (carga ligera / media / alta / ambiente corrosivo…), o escribirlo a mano
    junto con sus propiedades (límite elástico Re, resistencia Rm).

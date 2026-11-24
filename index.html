@@ -218,6 +218,13 @@
   .vel-sim input { width: 90px; accent-color: var(--ok); }
   #anim-info { position: absolute; top: 52px; left: 10px; max-width: min(520px, 60%); background: rgba(22,32,46,.88); color: #fff;
                padding: 8px 12px; border-radius: 8px; font-size: 14px; line-height: 1.35; }
+  .vista-modo { position: absolute; top: 10px; right: 10px; display: flex; background: #fff; border: 1px solid var(--borde); border-radius: 9px; overflow: hidden; z-index: 3; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .vista-modo button { background: #fff; color: var(--texto); border: 0; border-radius: 0; padding: 7px 16px; font-weight: 600; }
+  .vista-modo button:hover { background: #eef3fb; }
+  .vista-modo button.activo { background: var(--acento); color: #fff; }
+  #plano2d { position: absolute; inset: 0; background: #dfe4ea; padding: 54px 14px 14px; cursor: grab; z-index: 2; touch-action: none; }
+  #plano2d:active { cursor: grabbing; }
+  #plano2d svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 8px rgba(0,0,0,.18)); user-select: none; }
   #aviso-3d { position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
               text-align: center; padding: 20px; color: var(--mal); }
 
@@ -375,6 +382,7 @@
   <button class="sec" id="btn-nueva" title="Asigna el siguiente número correlativo"><svg class="ico"><use href="#i-mas"/></svg>Nueva pieza</button>
   <button id="btn-dxf" title="Plano 2D para AutoCAD">Exportar DXF</button>
   <button id="btn-stl" title="Malla 3D para SolidWorks">Exportar STL</button>
+  <button id="btn-pdf" title="Plano 2D + memoria de cálculo">Exportar PDF</button>
 </header>
 
 <main>
@@ -512,6 +520,8 @@
     </div>
     <div id="aviso-3d"></div>
     <div id="anim-info" hidden></div>
+    <div id="plano2d" hidden title="Rueda: zoom · arrastrar: mover · doble clic: ver todo"></div>
+    <div class="vista-modo" role="tablist"><button data-v="3d" class="activo">3D</button><button data-v="2d">Plano 2D</button></div>
 
     <div id="cajetin" aria-label="Cajetín">
       <div class="titulo" id="caj-titulo">—</div>
@@ -647,14 +657,15 @@ function geometriaHexagono(s, alto, rAgujero = 0) {
    Escritor DXF (R12 / AC1009) — compatible con AutoCAD
    ===================================================================== */
 class DXF {
-  constructor() { this.ent = []; }
+  constructor() { this.ent = []; this.prims = []; }
   _p(...pares) { for (let i = 0; i < pares.length; i += 2) this.ent.push(pares[i], pares[i + 1]); }
-  linea(x1, y1, x2, y2, capa = 'CONTORNO') { this._p(0, 'LINE', 8, capa, 10, x1, 20, y1, 30, 0, 11, x2, 21, y2, 31, 0); }
-  circulo(x, y, r, capa = 'CONTORNO') { this._p(0, 'CIRCLE', 8, capa, 10, x, 20, y, 30, 0, 40, r); }
-  arco(x, y, r, a1, a2, capa = 'CONTORNO') { this._p(0, 'ARC', 8, capa, 10, x, 20, y, 30, 0, 40, r, 50, a1, 51, a2); }
+  linea(x1, y1, x2, y2, capa = 'CONTORNO') { this.prims.push({ t: 'L', x1, y1, x2, y2, capa }); this._p(0, 'LINE', 8, capa, 10, x1, 20, y1, 30, 0, 11, x2, 21, y2, 31, 0); }
+  circulo(x, y, r, capa = 'CONTORNO') { this.prims.push({ t: 'C', x, y, r, capa }); this._p(0, 'CIRCLE', 8, capa, 10, x, 20, y, 30, 0, 40, r); }
+  arco(x, y, r, a1, a2, capa = 'CONTORNO') { this.prims.push({ t: 'A', x, y, r, a1, a2, capa }); this._p(0, 'ARC', 8, capa, 10, x, 20, y, 30, 0, 40, r, 50, a1, 51, a2); }
   rect(x1, y1, x2, y2, capa) { this.linea(x1, y1, x2, y1, capa); this.linea(x2, y1, x2, y2, capa); this.linea(x2, y2, x1, y2, capa); this.linea(x1, y2, x1, y1, capa); }
   texto(x, y, alto, txt, { capa = 'TEXTO', centrado = false, rot = 0 } = {}) {
     const t = String(txt).replace(/[\r\n]/g, ' ');
+    this.prims.push({ t: 'T', x, y, alto, txt: t, capa, centrado, rot });
     if (centrado) this._p(0, 'TEXT', 8, capa, 10, x, 20, y, 30, 0, 40, alto, 1, t, 50, rot, 72, 1, 11, x, 21, y, 31, 0);
     else this._p(0, 'TEXT', 8, capa, 10, x, 20, y, 30, 0, 40, alto, 1, t, 50, rot);
   }
@@ -4771,6 +4782,8 @@ function actualizar(encuadrar) {
     if (ok === false) td.className = 'mal';
   }
   ponerVeredicto(r.ok, r.msg);
+  estado.ultimoCalculo = r;
+  setTimeout(mostrarPlano2D, 0);
   // medidor: FS mínimo en el centro, doble del mínimo a la derecha
   $('medidor').hidden = !Number.isFinite(r.fsMin);
   if (Number.isFinite(r.fsMin)) {
@@ -4839,21 +4852,36 @@ function escalaPlano() {
 
 function exportarDXF() {
   if (!validar()) return toast('Corrija las medidas antes de exportar.');
+  const { dxf, etiqueta } = construirPlano();
+  descargar(nombreArchivo('dxf'), dxf.generar(), 'application/dxf');
+  toast(`DXF exportado (A4, escala ${etiqueta})`);
+}
+
+/* =====================================================================
+   Plano 2D en pantalla (SVG) y exportación a PDF (sin librerías externas)
+   El plano es el mismo que el DXF: lámina A4 apaisada en mm.
+   ===================================================================== */
+// Estilo de cada capa: color, grosor (mm) y patrón de trazo (mm), según ISO 128
+const ESTILO_CAPA = {
+  CONTORNO: ['#111111', 0.5, null], ROSCA: ['#1e8a4c', 0.18, null], OCULTAS: ['#6b7280', 0.25, [2.5, 1.2]],
+  EJES: ['#c0392b', 0.18, [6, 1, 1, 1]], COTAS: ['#1f5fbf', 0.18, null], TEXTO: ['#111111', 0.25, null],
+  CAJETIN: ['#111111', 0.35, null], SOLDADURA: ['#b5179e', 0.35, null],
+};
+const estiloDe = (capa) => ESTILO_CAPA[capa] ?? ESTILO_CAPA.CONTORNO;
+
+/** Lámina completa: marco, vistas del módulo, notas y cajetín. */
+function construirPlano() {
   const m = estado.modulo, v = estado.valores, sel = estado.sel;
   const mat = materialActual();
   const dxf = new DXF();
-  // Hoja A4 apaisada, marco y cajetín
   const { W, H, mg, cajW, cajH } = HOJA;
   dxf.rect(0, 0, W, H, 'CAJETIN');
   dxf.rect(mg, mg, W - mg, H - mg, 'CAJETIN');
-
   const { E, etiqueta, x0, y0, x1, y1, anchoUtil, altoUtil } = escalaPlano();
   const ox = mg + 20 + (anchoUtil - (x1 - x0) * E) / 2 - x0 * E;
   const oy = mg + cajH + 15 + (altoUtil - (y1 - y0) * E) / 2 - y0 * E;
   m.dibujarDXF(v, sel, dxf, E, ox, oy);
-
-  // Medidas adicionales como notas (esquina superior derecha)
-  if (estado.extras.length) {
+  if (estado.extras.length) {   // medidas adicionales (esquina superior derecha)
     const nx = W - mg - 85, ny = H - mg - 6;
     dxf.texto(nx, ny, 2.5, 'MEDIDAS ADICIONALES:');
     estado.extras.slice(0, 8).forEach((x, i) => {
@@ -4861,8 +4889,7 @@ function exportarDXF() {
       dxf.texto(nx, ny - 4 - i * 3.6, 2.2, `- ${x.nombre}: ${val}`.slice(0, 48));
     });
   }
-
-  // Cajetín (esquina inferior derecha)
+  // cajetín (esquina inferior derecha)
   const cx = W - mg - cajW, cy = mg;
   dxf.rect(cx, cy, W - mg, cy + cajH, 'CAJETIN');
   dxf.linea(cx, cy + 24, W - mg, cy + 24, 'CAJETIN');
@@ -4877,9 +4904,266 @@ function exportarDXF() {
   t(2, 8, 'DIBUJO', 1.8);     t(2, 3, ($('caj-autor').value || '-').slice(0, 20), 2.3);
   t(47, 8, 'PROYECTO', 1.8);  t(47, 3, ($('caj-proyecto').value || '-').slice(0, 45), 2.3);
   t(142, 8, 'UNIDADES', 1.8); t(142, 3, 'mm', 2.3);
+  return { dxf, etiqueta };
+}
 
-  descargar(nombreArchivo('dxf'), dxf.generar(), 'application/dxf');
-  toast(`DXF exportado (A4, escala ${etiqueta})`);
+/* ---------- SVG ---------- */
+function planoSVG(dxf) {
+  const { W, H } = HOJA;
+  const n = (x) => +x.toFixed(3);
+  const partes = [];
+  for (const p of dxf.prims) {
+    const [color, ancho, guion] = estiloDe(p.capa);
+    const trazo = `stroke="${color}" stroke-width="${ancho}"${guion ? ` stroke-dasharray="${guion.join(' ')}"` : ''} fill="none"`;
+    if (p.t === 'L') partes.push(`<line x1="${n(p.x1)}" y1="${n(H - p.y1)}" x2="${n(p.x2)}" y2="${n(H - p.y2)}" ${trazo}/>`);
+    if (p.t === 'C') partes.push(`<circle cx="${n(p.x)}" cy="${n(H - p.y)}" r="${n(p.r)}" ${trazo}/>`);
+    if (p.t === 'A') {
+      let sw = p.a2 - p.a1; while (sw <= 0) sw += 360;
+      const a1 = p.a1 * RAD, a2 = (p.a1 + sw) * RAD;
+      partes.push(`<path d="M ${n(p.x + p.r * Math.cos(a1))} ${n(H - p.y - p.r * Math.sin(a1))} A ${n(p.r)} ${n(p.r)} 0 ${sw > 180 ? 1 : 0} 0 ${n(p.x + p.r * Math.cos(a2))} ${n(H - p.y - p.r * Math.sin(a2))}" ${trazo}/>`);
+    }
+    if (p.t === 'T') {
+      partes.push(`<text x="0" y="0" transform="translate(${n(p.x)} ${n(H - p.y)}) rotate(${n(-p.rot)})" font-size="${n(p.alto * 1.38)}" fill="${color}"${p.centrado ? ' text-anchor="middle"' : ''}>${esc(p.txt)}</text>`);
+    }
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" font-family="Helvetica, Arial, sans-serif" stroke-linecap="round">
+    <rect width="${W}" height="${H}" fill="#ffffff"/>${partes.join('')}</svg>`;
+}
+
+/* ---------- Vista "Plano 2D" en el visor, con zoom y arrastre ---------- */
+const plano2d = { activo: false, vista: null };
+function mostrarPlano2D() {
+  const cont = $('plano2d');
+  if (!plano2d.activo || !cont) return;
+  try {
+    if (!validar()) return;
+    const { dxf } = construirPlano();
+    const vb = plano2d.vista;
+    cont.innerHTML = planoSVG(dxf);
+    const svg = cont.querySelector('svg');
+    if (vb) svg.setAttribute('viewBox', vb.join(' '));
+  } catch (e) { console.error(e); cont.innerHTML = '<p style="padding:20px;color:var(--mal)">No se pudo dibujar el plano.</p>'; }
+}
+function cambiarVista(modo) {
+  plano2d.activo = modo === '2d';
+  document.querySelectorAll('.vista-modo button').forEach(b => b.classList.toggle('activo', b.dataset.v === modo));
+  $('plano2d').hidden = !plano2d.activo;
+  $('cajetin').hidden = plano2d.activo;
+  document.querySelector('.herr-visor').hidden = plano2d.activo;
+  if (plano2d.activo) { $('anim-info').hidden = true; mostrarPlano2D(); }
+  else $('anim-info').hidden = !visor.animando;
+}
+function iniciarZoomPlano() {
+  const cont = $('plano2d');
+  const vbActual = () => (cont.querySelector('svg')?.getAttribute('viewBox') ?? `0 0 ${HOJA.W} ${HOJA.H}`).split(/\s+/).map(Number);
+  const poner = (vb) => { plano2d.vista = vb; cont.querySelector('svg')?.setAttribute('viewBox', vb.join(' ')); };
+  cont.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const svg = cont.querySelector('svg'); if (!svg) return;
+    const r = svg.getBoundingClientRect(), [x, y, w, h] = vbActual();
+    const esc = Math.min(w / r.width, h / r.height);                 // mm por píxel (preserveAspectRatio meet)
+    const px = x + (e.clientX - r.left - (r.width - w / esc) / 2) * esc, py = y + (e.clientY - r.top - (r.height - h / esc) / 2) * esc;
+    const k = Math.exp(Math.sign(e.deltaY) * 0.15), nw = Math.min(HOJA.W * 1.2, Math.max(8, w * k)), nh = nw * h / w;
+    poner([px - (px - x) * nw / w, py - (py - y) * nh / h, nw, nh]);
+  }, { passive: false });
+  let arrastre = null;
+  cont.addEventListener('pointerdown', (e) => { arrastre = { x: e.clientX, y: e.clientY, vb: vbActual() }; cont.setPointerCapture(e.pointerId); });
+  cont.addEventListener('pointermove', (e) => {
+    if (!arrastre) return;
+    const svg = cont.querySelector('svg'); const r = svg.getBoundingClientRect(), [x, y, w, h] = arrastre.vb;
+    const esc = Math.min(w / r.width, h / r.height);
+    poner([x - (e.clientX - arrastre.x) * esc, y - (e.clientY - arrastre.y) * esc, w, h]);
+  });
+  cont.addEventListener('pointerup', () => { arrastre = null; });
+  cont.addEventListener('dblclick', () => poner([0, 0, HOJA.W, HOJA.H]));
+}
+
+/* ---------- PDF 1.4 vectorial (Helvetica, WinAnsi) ---------- */
+// Anchos de Helvetica (AFM, 1/1000 em) para los caracteres 32–126; el resto ≈ 556
+const ANCHOS_HELV = [278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278, 556, 556, 556, 556, 556, 556, 556, 556, 556, 556,
+  278, 278, 584, 584, 584, 556, 1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 778, 667, 778, 722, 667, 611, 722, 667, 944,
+  667, 667, 611, 278, 278, 278, 469, 556, 333, 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833, 556, 556, 556, 556, 333, 500, 278, 556,
+  500, 722, 500, 500, 500, 334, 260, 334, 584];
+const CP1252 = { '€': 0x80, '‚': 0x82, '„': 0x84, '…': 0x85, '‘': 0x91, '’': 0x92, '“': 0x93, '”': 0x94, '–': 0x96, '—': 0x97 };
+// Letras griegas y símbolos que Helvetica (WinAnsi) no tiene: se transcriben
+const TRANSLIT_PDF = { 'α': 'alfa', 'β': 'beta', 'γ': 'gamma', 'δ': 'delta', 'ε': 'eps', 'η': 'eta', 'θ': 'theta', 'λ': 'lambda', 'μ': 'mu',
+  'π': 'pi', 'ρ': 'rho', 'σ': 'sigma', 'τ': 'tau', 'φ': 'phi', 'ψ': 'psi', 'ω': 'omega', 'Δ': 'Delta', 'Σ': 'Sigma', 'Ω': 'Omega',
+  '≥': '>=', '≤': '<=', '≈': '~', '≠': '!=', '→': '->', '←': '<-', '√': 'raiz', '∞': 'inf', '′': "'", '″': "''", '·': '·', '−': '-', '✎': '' };
+function aWinAnsi(txt) {
+  const b = [];
+  for (const ch0 of String(txt).replace(/[^\u0000-\u00ff]/g, (c) => TRANSLIT_PDF[c] ?? c)) {
+    const ch = ch0;
+    const c = ch.codePointAt(0);
+    if (c < 256) b.push(c);
+    else if (CP1252[ch]) b.push(CP1252[ch]);
+    else for (const k of ch.normalize('NFKC')) { const n = k.codePointAt(0); b.push(n < 256 ? n : 63); }
+  }
+  return b;
+}
+const anchoTexto = (bytes, tam) => bytes.reduce((s, c) => s + (c >= 32 && c <= 126 ? ANCHOS_HELV[c - 32] : 556), 0) / 1000 * tam;
+const cadenaPDF = (bytes) => '(' + bytes.map(c => c === 40 || c === 41 || c === 92 ? '\\' + String.fromCharCode(c) : c < 32 || c > 126 ? '\\' + c.toString(8).padStart(3, '0') : String.fromCharCode(c)).join('') + ')';
+
+class LienzoPDF {
+  // coordenadas en mm, origen abajo a la izquierda (como el DXF)
+  constructor() { this.ops = []; }
+  static pt = 72 / 25.4;
+  n(x) { return (x * LienzoPDF.pt).toFixed(2); }
+  color(hex, relleno = false) { const r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255; this.ops.push(`${r.toFixed(3)} ${g.toFixed(3)} ${b.toFixed(3)} ${relleno ? 'rg' : 'RG'}`); }
+  trazo([color, ancho, guion]) { this.color(color); this.ops.push(`${this.n(ancho)} w ${guion ? '[' + guion.map(d => this.n(d)).join(' ') + '] 0 d' : '[] 0 d'}`); }
+  linea(x1, y1, x2, y2) { this.ops.push(`${this.n(x1)} ${this.n(y1)} m ${this.n(x2)} ${this.n(y2)} l S`); }
+  arco(cx, cy, r, a1, sw) {   // bézier cúbicas de ≤ 90°
+    const nseg = Math.max(1, Math.ceil(Math.abs(sw) / 90)), d = sw / nseg * RAD;
+    let a = a1 * RAD;
+    const P = (ang) => [cx + r * Math.cos(ang), cy + r * Math.sin(ang)];
+    let [x0, y0] = P(a);
+    this.ops.push(`${this.n(x0)} ${this.n(y0)} m`);
+    for (let k = 0; k < nseg; k++) {
+      const b = a + d, kk = 4 / 3 * Math.tan(d / 4);
+      const [x3, y3] = P(b);
+      const x1 = x0 - kk * r * Math.sin(a), y1 = y0 + kk * r * Math.cos(a), x2 = x3 + kk * r * Math.sin(b), y2 = y3 - kk * r * Math.cos(b);
+      this.ops.push(`${this.n(x1)} ${this.n(y1)} ${this.n(x2)} ${this.n(y2)} ${this.n(x3)} ${this.n(y3)} c`);
+      a = b; x0 = x3; y0 = y3;
+    }
+    this.ops.push('S');
+  }
+  texto(x, y, alto, txt, { centrado = false, rot = 0, color = '#111111', negrita = false, derecha = false } = {}) {
+    const bytes = aWinAnsi(txt), tam = alto * 1.38 * LienzoPDF.pt;   // alto de mayúscula ≈ 0,72·cuerpo
+    const w = anchoTexto(bytes, tam), c = Math.cos(rot * RAD), s = Math.sin(rot * RAD);
+    const dx = centrado ? -w / 2 : derecha ? -w : 0;
+    this.color(color, true);
+    this.ops.push(`BT /${negrita ? 'F2' : 'F1'} ${tam.toFixed(2)} Tf ${c.toFixed(4)} ${s.toFixed(4)} ${(-s).toFixed(4)} ${c.toFixed(4)} ${this.n(x)} ${this.n(y)} Tm ${dx.toFixed(2)} 0 Td ${cadenaPDF(bytes)} Tj ET`);
+  }
+  rectRelleno(x, y, w, h, hex) { this.color(hex, true); this.ops.push(`${this.n(x)} ${this.n(y)} ${this.n(w)} ${this.n(h)} re f`); }
+  rectLinea(x, y, w, h, hex, ancho = 0.3) { this.color(hex); this.ops.push(`${this.n(ancho)} w [] 0 d ${this.n(x)} ${this.n(y)} ${this.n(w)} ${this.n(h)} re S`); }
+  imagen(nombre, x, y, w, h) { this.ops.push(`q ${this.n(w)} 0 0 ${this.n(h)} ${this.n(x)} ${this.n(y)} cm /${nombre} Do Q`); }
+  contenido() { return this.ops.join('\n'); }
+}
+
+/** Arma el archivo PDF: páginas = [{ contenido, imagenes: {nombre: {bytes, w, h}} }] */
+function armarPDF(paginas, titulo) {
+  const W = (HOJA.W * LienzoPDF.pt).toFixed(2), H = (HOJA.H * LienzoPDF.pt).toFixed(2);
+  const objetos = [];               // cada uno: Uint8Array o string
+  const nuevo = () => { objetos.push(null); return objetos.length; };
+  const cat = nuevo(), raiz = nuevo(), f1 = nuevo(), f2 = nuevo(), info = nuevo();
+  const kids = [];
+  const enc = (str) => new Uint8Array([...str].map(ch => ch.charCodeAt(0) & 255));
+  for (const pg of paginas) {
+    const idPag = nuevo(), idCont = nuevo();
+    const xobj = [];
+    for (const [nombre, im] of Object.entries(pg.imagenes ?? {})) {
+      const id = nuevo();
+      objetos[id - 1] = [enc(`<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.bytes.length} >>\nstream\n`), im.bytes, enc('\nendstream')];
+      xobj.push(`/${nombre} ${id} 0 R`);
+    }
+    const cont = enc(pg.contenido);
+    objetos[idCont - 1] = [enc(`<< /Length ${cont.length} >>\nstream\n`), cont, enc('\nendstream')];
+    objetos[idPag - 1] = `<< /Type /Page /Parent ${raiz} 0 R /MediaBox [0 0 ${W} ${H}] /Contents ${idCont} 0 R /Resources << /Font << /F1 ${f1} 0 R /F2 ${f2} 0 R >>${xobj.length ? ` /XObject << ${xobj.join(' ')} >>` : ''} >> >>`;
+    kids.push(`${idPag} 0 R`);
+  }
+  objetos[cat - 1] = `<< /Type /Catalog /Pages ${raiz} 0 R >>`;
+  objetos[raiz - 1] = `<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${kids.length} >>`;
+  objetos[f1 - 1] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
+  objetos[f2 - 1] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
+  objetos[info - 1] = `<< /Title ${cadenaPDF(aWinAnsi(titulo))} /Producer (Disenador de Piezas 3D) >>`;
+  // serializar con tabla xref
+  const trozos = [enc('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n')];
+  let pos = trozos[0].length;
+  const offsets = [];
+  objetos.forEach((o, i) => {
+    offsets.push(pos);
+    const partes = [enc(`${i + 1} 0 obj\n`), ...(Array.isArray(o) ? o : [new Uint8Array(aWinAnsi(o))]), enc('\nendobj\n')];
+    for (const p of partes) { trozos.push(p); pos += p.length; }
+  });
+  const xref = `xref\n0 ${objetos.length + 1}\n0000000000 65535 f \n` + offsets.map(o => String(o).padStart(10, '0') + ' 00000 n \n').join('');
+  trozos.push(enc(xref + `trailer\n<< /Size ${objetos.length + 1} /Root ${cat} 0 R /Info ${info} 0 R >>\nstartxref\n${pos}\n%%EOF\n`));
+  return new Blob(trozos, { type: 'application/pdf' });
+}
+
+/** Página 1: el plano, dibujado con los mismos elementos que el DXF. */
+function paginaPlano(dxf) {
+  const L = new LienzoPDF();
+  for (const p of dxf.prims) {
+    const est = estiloDe(p.capa);
+    if (p.t === 'T') { L.texto(p.x, p.y, p.alto, p.txt, { centrado: p.centrado, rot: p.rot, color: est[0] }); continue; }
+    L.trazo(est);
+    if (p.t === 'L') L.linea(p.x1, p.y1, p.x2, p.y2);
+    if (p.t === 'C') L.arco(p.x, p.y, p.r, 0, 360);
+    if (p.t === 'A') { let sw = p.a2 - p.a1; while (sw <= 0) sw += 360; L.arco(p.x, p.y, p.r, p.a1, sw); }
+  }
+  return { contenido: L.contenido() };
+}
+
+/** Página 2: memoria de cálculo con imagen 3D, datos de entrada y resultados. */
+function paginaMemoria(imagen) {
+  const L = new LienzoPDF(), { W, H, mg } = HOJA;
+  const m = estado.modulo, mat = materialActual(), r = estado.ultimoCalculo;
+  L.rectLinea(mg, mg, W - 2 * mg, H - 2 * mg, '#111111', 0.35);
+  L.texto(mg + 4, H - mg - 9, 4.2, 'MEMORIA DE CÁLCULO', { negrita: true });
+  L.texto(mg + 4, H - mg - 15, 3, `${$('caj-titulo').textContent}  ·  ${numeroTexto()}  ·  ${$('caj-fecha').textContent}`);
+  L.texto(mg + 4, H - mg - 20, 2.4, `Material: ${mat?.nombre ?? '-'}${mat?.Re ? `  (Re ${mat.Re} MPa, Rm ${mat.Rm} MPa)` : ''}   ·   Dibujó: ${$('caj-autor').value || '-'}   ·   Proyecto: ${$('caj-proyecto').value || '-'}`, { color: '#333333' });
+  // imagen 3D
+  const ix = mg + 4, iy = 78, iw = 140, ih = H - mg - 26 - iy;
+  if (imagen) {
+    const k = Math.min(iw / imagen.w, ih / imagen.h), w = imagen.w * k, h = imagen.h * k;
+    L.imagen('Im1', ix + (iw - w) / 2, iy + (ih - h) / 2, w, h);
+  }
+  L.rectLinea(ix, iy, iw, ih, '#9aa4b1', 0.25);
+  // datos de entrada (debajo de la imagen, en dos columnas)
+  const datos = [];
+  for (const s of m.selectores) { if (s.visible && !s.visible(estado.sel)) continue; const op = opcionesDe(s).find(o => o[0] === estado.sel[s.id]); if (op) datos.push([s.etiqueta, op[1]]); }
+  for (const c of [...m.campos, ...m.cargas]) if (campoVisible(c)) datos.push([textoDe(c.etiqueta), `${fmt(estado.valores[c.id], 2).replace(/,00$/, '')} ${textoDe(c.uni) ?? ''}`]);
+  L.texto(ix, iy - 6, 2.8, 'DATOS DE ENTRADA', { negrita: true });
+  const filasCol = Math.ceil(datos.length / 2), dy = Math.min(3.6, (iy - 6 - mg - 4) / Math.max(1, filasCol));
+  datos.forEach(([k, val], i) => {
+    const col = i < filasCol ? 0 : 1, fila = i % filasCol, x = ix + col * 72, y = iy - 11 - fila * dy;
+    L.texto(x, y, Math.min(2, dy * 0.6), String(k).slice(0, 30), { color: '#444444' });
+    L.texto(x + 69, y, Math.min(1.9, dy * 0.6), String(val).slice(0, 28), { derecha: true, negrita: true });
+  });
+  // resultados
+  const rx = ix + iw + 8, rw = W - mg - 4 - rx;
+  L.texto(rx, H - mg - 30, 2.8, 'RESULTADOS', { negrita: true });
+  const filas = r?.filas ?? [];
+  const alto = Math.min(4.4, (H - mg - 36 - (mg + 22)) / Math.max(1, filas.length));
+  filas.forEach(([k, val, ok], i) => {
+    const y = H - mg - 36 - i * alto;
+    if (i % 2 === 0) L.rectRelleno(rx - 1, y - alto * 0.32, rw + 2, alto, '#f1f4f8');
+    const tam = Math.min(2.3, alto * 0.55);
+    L.texto(rx, y, tam, String(k).slice(0, 52), { color: '#333333' });
+    const color = ok === true ? '#1e8a4c' : ok === false ? '#c0392b' : '#111111';
+    L.texto(rx + rw - (ok !== undefined ? 3 : 0), y, tam, String(val).slice(0, 40), { derecha: true, color, negrita: ok !== undefined });
+    if (ok !== undefined) L.rectRelleno(rx + rw - 1.8, y - 0.1, 1.8, 1.8, color);   // marca verde (cumple) o roja (no cumple)
+  });
+  // veredicto
+  if (r) {
+    L.rectRelleno(rx - 1, mg + 4, rw + 2, 12, r.ok ? '#e3f4ea' : '#fbe7e4');
+    L.texto(rx + 2, mg + 11.5, 2.6, (r.ok ? 'CUMPLE' : 'NO CUMPLE'), { negrita: true, color: r.ok ? '#1e8a4c' : '#c0392b' });
+    L.texto(rx + 2, mg + 7, 2.1, r.msg.replace(/^(NO )?CUMPLE:\s*/, '').slice(0, 95), { color: r.ok ? '#1e8a4c' : '#c0392b' });
+  }
+  L.texto(W - mg - 4, mg - 5, 1.8, 'Diseñador de Piezas 3D · cálculos simplificados según las normas citadas; verificar antes de fabricar', { derecha: true, color: '#777777' });
+  return { contenido: L.contenido(), imagenes: imagen ? { Im1: imagen } : {} };
+}
+
+/** Captura del visor 3D como JPEG (bytes para el PDF). */
+function capturaVisor() {
+  if (!visor.listo) return null;
+  const { renderer, escena, camara } = visor;
+  renderer.render(escena, camara);
+  const lienzo = renderer.domElement;
+  const url = lienzo.toDataURL('image/jpeg', 0.9);
+  const bin = atob(url.split(',')[1]);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return { bytes, w: lienzo.width, h: lienzo.height };
+}
+
+function exportarPDF() {
+  if (!validar()) return toast('Corrija las medidas antes de exportar.');
+  const { dxf, etiqueta } = construirPlano();
+  let imagen = null;
+  try { imagen = capturaVisor(); } catch (e) { console.warn(e); }
+  const pdf = armarPDF([paginaPlano(dxf), paginaMemoria(imagen)], `${numeroTexto()} ${$('caj-titulo').textContent}`);
+  descargar(nombreArchivo('pdf'), pdf);
+  toast(`PDF exportado: plano (escala ${etiqueta}) + memoria de cálculo`);
 }
 
 /* =====================================================================
@@ -4908,6 +5192,9 @@ window.addEventListener('drop', (e) => {
   moduloImportar.abrirArchivo(f);
 });
 $('btn-dxf').addEventListener('click', () => { try { exportarDXF(); } catch (e) { console.error(e); toast('Error al exportar DXF.'); } });
+$('btn-pdf').addEventListener('click', () => { try { exportarPDF(); } catch (e) { console.error(e); toast('Error al exportar PDF.'); } });
+document.querySelectorAll('.vista-modo button').forEach(b => b.addEventListener('click', () => cambiarVista(b.dataset.v)));
+iniciarZoomPlano();
 $('btn-stl').addEventListener('click', () => { try { exportarSTL(); } catch (e) { console.error(e); toast('Error al exportar STL.'); } });
 $('btn-encuadrar').addEventListener('click', encuadrarCamara);
 function actualizarBotonSimular() {
