@@ -38,22 +38,33 @@ y exportarlas a programas CAD.
 6. **Foto + IA**: descartado por ahora (la API de Claude es de pago). Se
    quitó del código. Para piezas irregulares hay una sección manual de
    "Medidas adicionales" en cada módulo, que se anota en el DXF.
-7. **Módulos**, todos con sus cálculos (✅ = implementado):
-   - ✅ **Pernos y roscas** internas/externas (perno, tuerca, conjunto):
-     área resistente, tracción, corte, von Mises, precarga, par de apriete,
-     longitud mínima de rosca acoplada.
-   - ✅ **Escalera / plataforma** (escalera + plataforma, solo escalera, solo
-     plataforma) en tubo estructural, para una persona de 90 kg más
-     herramientas: peldaños, largueros, vigas y travesaños (flexión y flecha),
-     patas (pandeo de Euler), poste de baranda (OSHA 890 N), ergonomía
-     (Blondel, inclinación 30–50°).
-   - ✅ **Piñón con chavetero** (plano o con cubo): perfil evolvente α = 20°,
-     diámetros, Lewis + Barth, chaveta DIN 6885 (corte y aplastamiento),
-     espesor de llanta AGMA (m_B ≥ 1,2), socavado y ancho de cara.
-   - ✅ **Rodamientos** rígidos de bolas series 60/62/63 (catálogo aprox.):
-     carga equivalente (X, Y), vida L10 / L10h (ISO 281), C requerida,
-     seguridad estática s₀.
-   - Ideas siguientes: eje (flexión + torsión, ASME), soldaduras, poleas.
+7. **Módulos**, todos con sus cálculos (✅ = implementado). Deben cubrir todas
+   las variantes habituales de cada pieza, no sólo la más simple:
+   - ✅ **Pernos y roscas**: perno, tuerca o conjunto; cabeza hexagonal (ISO 4017),
+     Allen (ISO 4762), avellanada (ISO 10642) o varilla roscada; tuerca normal
+     (ISO 4032), contratuerca (ISO 4035) o autoblocante (ISO 7040); rosca métrica
+     gruesa, fina (ISO 261) o UNC. Área resistente, tracción, corte, von Mises,
+     precarga, par, presión bajo cabeza, rosca acoplada mínima.
+   - ✅ **Estructuras** para una persona de 90 kg + herramientas: escalera +
+     plataforma, solo escalera, plataforma rectangular, escalera de caracol y
+     plataforma circular. Perfil de cualquier forma: tubo rectangular, tubo
+     redondo, barra redonda, pletina, angular L, canal UPN, viga IPE/HEB, T, con
+     catálogo comercial o medidas a mano (propiedades por composición de
+     rectángulos; Imin principal para L). Peso propio, carga repartida extra,
+     flexión y flecha (vigas y voladizos), pandeo de Euler con K según apoyos,
+     columna del caracol (compresión + flexión), baranda (OSHA 890 N),
+     ergonomía (Blondel, inclinación, altura libre del caracol).
+   - ✅ **Piñón**: dentado recto o helicoidal (β), plano o con cubo, agujero liso
+     o con uno/dos chaveteros DIN 6885. Diámetros, fuerzas Wt/Wr/Wa, Lewis con
+     dientes virtuales + Barth, chavetas (DIN 6892 para dos), llanta AGMA,
+     socavado, ancho de cara, recubrimiento axial.
+   - ✅ **Rodamientos**: rígido de bolas, contacto angular, autoalineable de
+     bolas, rodillos cilíndricos, cónicos, a rótula, agujas, axial de bolas y
+     axial de rodillos, con series de catálogo (valores aprox. SKF, editables).
+     P = X·Fr + Y·Fa según tipo, exponente 3 o 10/3, fiabilidad a1 (ISO 281),
+     factor de servicio, C requerida, s0, tipos que no admiten carga axial/radial.
+   - Ideas siguientes: eje (flexión + torsión, ASME), soldaduras, poleas,
+     engranajes cónicos y tornillo sin fin.
 
 ## Arquitectura
 
@@ -61,10 +72,12 @@ y exportarlas a programas CAD.
   plegables, selectores con iconos/fichas, deslizadores, visor 3D, cajetín)
   y todo el código.
 - Cada módulo es un objeto registrado en `MODULOS` con:
-  - `selectores`: opciones `[valor, texto, icono]`, `estilo: 'segmentos' | 'fichas'`.
+  - `selectores`: opciones `[valor, texto, icono]` (o función `(sel) => opciones`
+    si dependen de otro selector), `estilo: 'segmentos' | 'fichas'`, y
+    `visible: (sel) => bool` opcional.
   - `campos`: definición de las medidas (id, etiqueta, unidad, min, max, valor,
-    `rmax` del deslizador, `solo` = tipos de pieza donde aplica, `instrumento` y
-    `comoMedir` para la lista sin IA).
+    `rmax` del deslizador, `solo` = tipos de pieza donde aplica o
+    `visible: (sel) => bool`; `etiqueta` puede ser función de `sel`).
   - `materiales`: lista con `Re`, `Rm` (MPa), `E` (MPa) y uso recomendado.
     `usaResistencia: false` si el cálculo no usa Re/Rm (rodamientos).
   - `validar(medidas, sel)`, `alCambiarSelector(id, valor, ponerValores, sel)`,
