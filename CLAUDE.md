@@ -63,8 +63,22 @@ y exportarlas a programas CAD.
      axial de rodillos, con series de catálogo (valores aprox. SKF, editables).
      P = X·Fr + Y·Fa según tipo, exponente 3 o 10/3, fiabilidad a1 (ISO 281),
      factor de servicio, C requerida, s0, tipos que no admiten carga axial/radial.
-   - Ideas siguientes: eje (flexión + torsión, ASME), soldaduras, poleas,
-     engranajes cónicos y tornillo sin fin.
+   - ✅ **Soldaduras**: filete en solape, ménsula con carga excéntrica (corte +
+     torsión del grupo), perfil rectangular y tubo en voladizo (flexión, corte,
+     torsión), a tope. Electrodos AWS E60–E120 y E308L, procesos SMAW/MIG/TIG/
+     FCAW. Shigley cap. 9, AISC (0,30·Sut / 0,60·Sy), cateto mínimo AWS D1.1.
+     Símbolo ISO 2553 en el DXF (capa SOLDADURA).
+   - ✅ **Engranajes cónicos** de dientes rectos a 90° (par, piñón o rueda):
+     conos primitivos, Re, fuerzas, Lewis con dientes virtuales, límites de ancho.
+   - ✅ **Tornillo sin fin y corona** (1–6 entradas, módulo DIN 780): ángulo de
+     avance, rendimiento, fricción AGMA automática o manual, autobloqueo,
+     fuerzas, Lewis de la corona (y = 0,125), calor perdido.
+   - ✅ **Poleas y correas**: trapezoidal (SPZ–SPC, A–C), plana y síncrona HTD;
+     transmisión o polea sola. Euler-Eytelwein, fuerza centrífuga, número de
+     correas o ancho necesario, largo de correa, tensiones, carga en ejes,
+     velocidad máxima del material.
+   - Ideas siguientes: eje (flexión + torsión, ASME), cadenas y piñones de
+     cadena, resortes, engranajes cónicos helicoidales.
 
 ## Arquitectura
 
