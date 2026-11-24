@@ -35,9 +35,16 @@ y exportarlas a programas CAD.
 5. **Cajetín** con numeración correlativa automática (PZ-0001, PZ-0002…). El
    contador se guarda en el navegador (`localStorage`, siempre dentro de
    try/catch) y aparece en pantalla, en el DXF y en el nombre de los archivos.
-6. **Foto + IA**: subir una foto de la pieza para que la IA proponga qué medidas
-   pedir; el usuario puede corregir, agregar o quitar medidas antes de usarlas.
-   (Pendiente.)
+6. **Foto + IA** ✅: sacar (cámara) o subir una foto; la IA (Claude, modelo
+   `claude-opus-5-5`, SDK oficial `@anthropic-ai/sdk` cargado desde CDN sólo al
+   pulsar "Analizar") identifica la pieza y propone qué medidas tomar, con qué
+   instrumento y, si hay referencia de escala, un valor estimado. Respuesta en
+   JSON con salida estructurada (`output_config.format`). El usuario edita,
+   desmarca o agrega medidas y las aplica al módulo; las que no corresponden a un
+   campo quedan como "medidas adicionales" y se anotan en el DXF.
+   - La clave de API la escribe el usuario en la interfaz (opcionalmente se
+     guarda en `localStorage`). Nunca escribir una clave en el código.
+   - Botón "Lista estándar sin IA" como respaldo sin internet para la defensa.
 7. **Módulos**, todos con sus cálculos:
    - **Pernos y roscas** internas/externas (perno, tuerca, conjunto):
      área resistente, tracción, corte, von Mises, precarga, par de apriete,
@@ -48,10 +55,14 @@ y exportarlas a programas CAD.
 
 ## Arquitectura
 
-- `index.html`: interfaz (menú de módulos, panel de medidas, visor 3D, panel de
-  cálculos, cajetín) y todo el código.
+- `index.html`: interfaz (menú lateral de tarjetas, panel con secciones
+  plegables, selectores con iconos/fichas, deslizadores, visor 3D, cajetín,
+  vista Foto + IA) y todo el código.
 - Cada módulo es un objeto registrado en `MODULOS` con:
-  - `campos`: definición de las medidas (id, etiqueta, unidad, min, max, valor).
+  - `selectores`: opciones `[valor, texto, icono]`, `estilo: 'segmentos' | 'fichas'`.
+  - `campos`: definición de las medidas (id, etiqueta, unidad, min, max, valor,
+    `rmax` del deslizador, `solo` = tipos de pieza donde aplica, `instrumento` y
+    `comoMedir` para la lista sin IA).
   - `materiales`: lista de materiales con su uso recomendado.
   - `construir3D(medidas)`: devuelve un `THREE.Group` en milímetros.
   - `calcular(medidas, material)`: devuelve filas de resultados y veredicto.

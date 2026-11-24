@@ -13,9 +13,14 @@
     --suave: #5b6878;
     --acento: #1f5fbf;
     --acento-osc: #174a96;
+    --acento-claro: #e7f0fd;
     --ok: #1e8a4c;
     --mal: #c0392b;
     --aviso: #b7791f;
+    --nav: #172131;
+    --nav-2: #1f2c40;
+    --nav-texto: #cfd8e3;
+    --radio: 10px;
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
@@ -28,86 +33,211 @@
     display: flex;
     flex-direction: column;
   }
+  svg.ico { width: 1em; height: 1em; flex: none; }
 
   /* ---------- Cabecera ---------- */
   header {
     display: flex; align-items: center; gap: 12px;
     padding: 10px 16px;
-    background: #16202e; color: #fff;
+    background: var(--nav); color: #fff;
+    border-bottom: 1px solid #0d1520;
   }
-  header h1 { font-size: 18px; margin: 0; font-weight: 600; flex: 1; }
-  header h1 small { font-weight: 400; color: #9fb0c6; margin-left: 8px; }
+  .marca { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  .marca .logo { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #3b82f6, #1f5fbf);
+                 display: grid; place-items: center; font-size: 20px; flex: none; }
+  .marca h1 { font-size: 18px; margin: 0; font-weight: 650; white-space: nowrap; }
+  .marca small { display: block; font-weight: 400; color: #8fa3bd; font-size: 12px; }
   button {
     font: inherit; cursor: pointer;
     border: 1px solid var(--acento); background: var(--acento); color: #fff;
-    padding: 7px 14px; border-radius: 6px;
+    padding: 7px 14px; border-radius: 8px;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: background .15s, transform .1s, box-shadow .15s;
   }
   button:hover { background: var(--acento-osc); }
-  button.sec { background: transparent; border-color: #5b6c84; color: #dfe7f2; }
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  button.sec { background: transparent; border-color: #4a5c76; color: #dfe7f2; }
   button.sec:hover { background: #243246; }
+  button.claro { background: #fff; color: var(--texto); border-color: var(--borde); }
+  button.claro:hover { background: #f3f6fa; }
+  button.grande { padding: 11px 18px; font-size: 16px; font-weight: 600; }
 
   /* ---------- Distribución principal ---------- */
   main {
     flex: 1; min-height: 0;
     display: grid;
-    grid-template-columns: 210px 380px 1fr;
+    grid-template-columns: 250px 420px 1fr;
   }
-  nav {
-    background: #1e2a3b; color: #cfd8e3;
-    padding: 12px 0; overflow-y: auto;
-  }
-  nav h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
-           color: #8193aa; margin: 6px 16px 8px; }
-  nav button {
-    display: block; width: 100%; text-align: left;
-    background: none; border: 0; border-radius: 0; color: inherit;
-    padding: 10px 16px; border-left: 3px solid transparent;
-  }
-  nav button:hover:not(:disabled) { background: #273648; }
-  nav button.activo { background: #273648; border-left-color: #5aa0ff; color: #fff; }
-  nav button:disabled { color: #6c7c92; cursor: not-allowed; }
-  nav button .etq { display: block; font-size: 11px; color: #7f91a8; }
 
+  /* ---------- Menú lateral ---------- */
+  nav {
+    background: var(--nav); color: var(--nav-texto);
+    padding: 14px 12px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  nav h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .1em;
+           color: #7489a5; margin: 10px 6px 4px; }
+  .tarjeta-mod {
+    width: 100%; text-align: left; display: grid; grid-template-columns: 42px 1fr; gap: 10px; align-items: center;
+    background: var(--nav-2); border: 1px solid #2a3a52; color: inherit;
+    padding: 10px; border-radius: var(--radio); position: relative;
+  }
+  .tarjeta-mod:hover:not(:disabled) { background: #283a54; border-color: #3d5576; transform: translateX(2px); }
+  .tarjeta-mod.activo { background: linear-gradient(135deg, #24467a, #1f3558); border-color: #5aa0ff; color: #fff;
+                        box-shadow: 0 0 0 1px #5aa0ff inset; }
+  .tarjeta-mod:disabled { opacity: 1; }
+  .tarjeta-mod:disabled .t-ico, .tarjeta-mod:disabled .t-txt { opacity: .55; }
+  .t-ico { width: 42px; height: 42px; border-radius: 9px; background: #2c3f5c; display: grid; place-items: center; }
+  .t-ico svg { width: 26px; height: 26px; }
+  .tarjeta-mod.activo .t-ico { background: #3b82f6; }
+  .t-txt b { display: block; font-size: 14px; font-weight: 600; padding-right: 50px; }
+  .t-txt span { display: block; font-size: 11.5px; color: #93a5bf; line-height: 1.3; margin-top: 2px; }
+  .tarjeta-mod.activo .t-txt span { color: #cfe0ff; }
+  .insignia { position: absolute; top: 7px; right: 8px; font-size: 10px; font-weight: 700; letter-spacing: .04em;
+              padding: 2px 6px; border-radius: 99px; text-transform: uppercase; }
+  .insignia.lista { background: #1e8a4c; color: #fff; }
+  .insignia.pronto { background: #3a4a62; color: #b8c6d9; }
+  .insignia.ia { background: linear-gradient(90deg, #a855f7, #3b82f6); color: #fff; }
+  .nav-pie { margin-top: auto; font-size: 11px; color: #6c7f98; padding: 10px 6px 0; line-height: 1.4; }
+
+  /* ---------- Panel ---------- */
   #panel {
     background: var(--panel); border-right: 1px solid var(--borde);
-    overflow-y: auto; padding: 14px 16px 24px;
+    overflow-y: auto; padding: 16px 16px 28px;
   }
-  #panel h2 { font-size: 17px; margin: 0 0 4px; }
-  #panel h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em;
-              color: var(--suave); margin: 18px 0 8px; border-bottom: 1px solid var(--borde);
-              padding-bottom: 4px; }
-  .desc { color: var(--suave); margin: 0 0 6px; font-size: 13px; }
+  .cab-vista { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .cab-vista .t-ico { background: var(--acento-claro); color: var(--acento); }
+  .cab-vista h2 { font-size: 19px; margin: 0; }
+  .desc { color: var(--suave); margin: 4px 0 8px; font-size: 13px; line-height: 1.4; }
 
-  .campo { display: grid; grid-template-columns: 1fr 110px 42px; align-items: center;
-           gap: 6px; margin-bottom: 6px; }
+  details.sec { border: 1px solid var(--borde); border-radius: var(--radio); margin-top: 12px; background: #fff; }
+  details.sec > summary {
+    list-style: none; cursor: pointer; padding: 10px 12px; font-weight: 650; font-size: 14px;
+    display: flex; align-items: center; gap: 8px; user-select: none;
+  }
+  details.sec > summary::-webkit-details-marker { display: none; }
+  details.sec > summary::after { content: '▸'; margin-left: auto; color: var(--suave); transition: transform .15s; }
+  details.sec[open] > summary::after { transform: rotate(90deg); }
+  details.sec > summary .ico { color: var(--acento); width: 18px; height: 18px; }
+  details.sec > .cuerpo { padding: 0 12px 12px; }
+  .etq-grupo { font-size: 12px; color: var(--suave); margin: 10px 0 6px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+
+  /* Selector segmentado con iconos */
+  .segmentos { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
+  .segmentos button {
+    flex-direction: column; gap: 4px; padding: 10px 6px; background: #f5f7fa; color: var(--texto);
+    border: 1.5px solid var(--borde); font-size: 13px; text-align: center; justify-content: center;
+  }
+  .segmentos button svg { width: 34px; height: 34px; color: #64748b; }
+  .segmentos button:hover { background: #eef3fb; border-color: #9db8e3; }
+  .segmentos button.activo { background: var(--acento-claro); border-color: var(--acento); color: var(--acento-osc); font-weight: 600; }
+  .segmentos button.activo svg { color: var(--acento); }
+
+  /* Fichas (chips) */
+  .fichas { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fichas button {
+    background: #f5f7fa; color: var(--texto); border: 1.5px solid var(--borde);
+    padding: 5px 11px; border-radius: 99px; font-size: 13px;
+  }
+  .fichas button:hover { border-color: #9db8e3; background: #eef3fb; }
+  .fichas button.activo { background: var(--acento); border-color: var(--acento); color: #fff; }
+
+  /* Campos numéricos con deslizador */
+  .campo { display: grid; grid-template-columns: 1fr 92px 34px; align-items: center; gap: 4px 8px; margin-bottom: 10px; }
   .campo label { font-size: 14px; }
-  .campo input, .campo select, select.ancho, input.ancho {
-    font: inherit; padding: 5px 7px; border: 1px solid var(--borde); border-radius: 5px;
+  .campo input[type=number], input.ancho, select.ancho, textarea.ancho {
+    font: inherit; padding: 6px 8px; border: 1.5px solid var(--borde); border-radius: 7px;
     width: 100%; background: #fff; color: var(--texto);
   }
+  .campo input[type=number]:focus, input.ancho:focus, textarea.ancho:focus { outline: none; border-color: var(--acento); box-shadow: 0 0 0 3px #1f5fbf22; }
+  .campo input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--acento); margin: 0; height: 18px; }
   .campo .uni { font-size: 12px; color: var(--suave); }
-  .campo.error input { border-color: var(--mal); background: #fdf0ee; }
-  .campo .msg { grid-column: 1 / -1; color: var(--mal); font-size: 12px; margin-top: -2px; }
-  select.ancho, input.ancho { margin-bottom: 8px; }
-  .fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .nota { font-size: 12px; color: var(--suave); margin: 2px 0 8px; }
+  .campo.error input[type=number] { border-color: var(--mal); background: #fdf0ee; }
+  .campo .msg { grid-column: 1 / -1; color: var(--mal); font-size: 12px; }
+  .nota { font-size: 12px; color: var(--suave); margin: 4px 0 8px; line-height: 1.4; }
 
+  /* Tarjetas de material */
+  .materiales { display: grid; gap: 6px; }
+  .mat {
+    display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: center; text-align: left;
+    background: #fff; color: var(--texto); border: 1.5px solid var(--borde); border-radius: 9px; padding: 8px 10px;
+  }
+  .mat:hover { background: #f6f9fd; border-color: #9db8e3; }
+  .mat.activo { border-color: var(--acento); background: var(--acento-claro); box-shadow: 0 0 0 1px var(--acento) inset; }
+  .mat b { font-size: 14px; }
+  .mat .re { font-size: 12px; color: var(--suave); font-variant-numeric: tabular-nums; }
+  .mat .barra { grid-column: 1 / -1; height: 5px; background: #e5e9f0; border-radius: 9px; overflow: hidden; }
+  .mat .barra i { display: block; height: 100%; background: linear-gradient(90deg, #60a5fa, #1f5fbf); border-radius: 9px; }
+  .mat .uso { grid-column: 1 / -1; font-size: 12px; color: var(--suave); }
+  .fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* Resultados */
+  .medidor { margin: 6px 0 12px; }
+  .medidor .pista { position: relative; height: 12px; border-radius: 99px; background: linear-gradient(90deg, #f3c1ba 0 33%, #f6e3b3 33% 50%, #c9ebd6 50%); }
+  .medidor .marca-min { position: absolute; top: -4px; bottom: -4px; width: 2px; background: #1b2430; left: 50%; }
+  .medidor .aguja { position: absolute; top: -5px; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%;
+                    background: #fff; border: 3px solid var(--acento); box-shadow: 0 1px 4px rgba(0,0,0,.25); transition: left .3s; }
+  .medidor .etqs { display: flex; justify-content: space-between; font-size: 11px; color: var(--suave); margin-top: 6px; }
   table.res { width: 100%; border-collapse: collapse; font-size: 14px; }
-  table.res td { padding: 4px 2px; border-bottom: 1px solid #eef1f5; }
+  table.res td { padding: 5px 2px; border-bottom: 1px solid #eef1f5; }
   table.res td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
   td.ok { color: var(--ok); font-weight: 600; }
   td.mal { color: var(--mal); font-weight: 600; }
-  .veredicto { margin-top: 10px; padding: 10px 12px; border-radius: 6px; font-weight: 600; }
+  .veredicto { margin-top: 4px; padding: 12px 14px; border-radius: 9px; font-weight: 650; font-size: 15px; display: flex; gap: 8px; align-items: center; }
   .veredicto.ok { background: #e3f4ea; color: var(--ok); }
   .veredicto.mal { background: #fbe7e4; color: var(--mal); }
 
+  /* Medidas adicionales */
+  .extra { display: grid; grid-template-columns: 1fr 80px 40px 28px; gap: 6px; align-items: center; margin-bottom: 6px; font-size: 14px; }
+  .extra input { font: inherit; padding: 4px 6px; border: 1.5px solid var(--borde); border-radius: 6px; width: 100%; }
+  .btn-x { background: none; border: 0; color: var(--suave); padding: 4px; font-size: 16px; justify-content: center; }
+  .btn-x:hover { background: #fbe7e4; color: var(--mal); }
+
+  /* ---------- Foto + IA ---------- */
+  .zona-foto {
+    border: 2px dashed #a9b8cc; border-radius: 12px; background: #f7f9fc; min-height: 190px;
+    display: grid; place-items: center; text-align: center; padding: 14px; position: relative; overflow: hidden;
+    transition: border-color .15s, background .15s;
+  }
+  .zona-foto.encima { border-color: var(--acento); background: var(--acento-claro); }
+  .zona-foto img { max-width: 100%; max-height: 280px; border-radius: 8px; display: block; }
+  .zona-foto .vacia svg { width: 48px; height: 48px; color: #8a9bb3; }
+  .zona-foto .vacia p { margin: 6px 0 0; color: var(--suave); font-size: 13px; }
+  .botones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .botones > button { flex: 1; justify-content: center; }
+  .btn-ia { background: linear-gradient(90deg, #7c3aed, #1f5fbf); border: 0; }
+  .btn-ia:hover { background: linear-gradient(90deg, #6d28d9, #174a96); }
+  .cargando { display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3effd; border-radius: 9px; color: #5b21b6; margin-top: 10px; }
+  .giro { width: 18px; height: 18px; border: 3px solid #c4b5fd; border-top-color: #7c3aed; border-radius: 50%; animation: giro .8s linear infinite; }
+  @keyframes giro { to { transform: rotate(360deg); } }
+  .aviso { padding: 10px 12px; border-radius: 9px; font-size: 13px; margin-top: 10px; line-height: 1.4; }
+  .aviso.mal { background: #fbe7e4; color: #8e2a1f; }
+  .aviso.info { background: #eef4fd; color: #1d4580; }
+  .ident { background: linear-gradient(135deg, #f5f0ff, #eef4fd); border: 1px solid #d8cdf7; border-radius: 10px; padding: 12px; margin-top: 12px; }
+  .ident h4 { margin: 0 0 4px; font-size: 16px; }
+  .conf { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; margin-left: 6px; vertical-align: middle; }
+  .conf.alta { background: #c9ebd6; color: #145c33; } .conf.media { background: #f6e3b3; color: #7a5110; } .conf.baja { background: #f3c1ba; color: #8e2a1f; }
+  .med-ia { border: 1.5px solid var(--borde); border-radius: 9px; padding: 8px; margin-top: 8px; background: #fff; }
+  .med-ia.apagada { opacity: .5; }
+  .med-ia .l1 { display: grid; grid-template-columns: 22px 1fr 84px 30px 28px; gap: 6px; align-items: center; }
+  .med-ia .l2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+  .med-ia input, .med-ia select { font: inherit; font-size: 13px; padding: 4px 6px; border: 1.5px solid var(--borde); border-radius: 6px; width: 100%; background: #fff; }
+  .med-ia input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--acento); }
+  .med-ia .como { font-size: 12px; color: var(--suave); margin-top: 5px; line-height: 1.35; }
+  dialog { border: 0; border-radius: 14px; padding: 0; max-width: min(720px, 94vw); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+  dialog::backdrop { background: rgba(10,16,26,.6); }
+  dialog video { display: block; width: 100%; max-height: 70vh; background: #000; }
+  dialog .botones { padding: 10px; margin: 0; }
+
   /* ---------- Visor ---------- */
-  #visor-cont { position: relative; min-width: 0; min-height: 0; background: linear-gradient(#f7f9fc, #dfe5ee); }
+  #visor-cont { position: relative; min-width: 0; min-height: 0; background: #e8ecf2; }
   #visor { position: absolute; inset: 0; }
   #visor canvas { display: block; }
-  .herr-visor { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; }
-  .herr-visor button { background: rgba(255,255,255,.9); color: var(--texto); border-color: var(--borde); padding: 5px 10px; font-size: 13px; }
+  .herr-visor { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .herr-visor button { background: rgba(255,255,255,.92); color: var(--texto); border-color: var(--borde); padding: 6px 10px; font-size: 13px; }
   .herr-visor button:hover { background: #fff; }
+  .herr-visor button.activo { background: var(--acento); color: #fff; border-color: var(--acento); }
   #aviso-3d { position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
               text-align: center; padding: 20px; color: var(--mal); }
 
@@ -126,16 +256,15 @@
   #caj-num { color: var(--acento); font-size: 14px; }
 
   #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
-           background: #16202e; color: #fff; padding: 10px 18px; border-radius: 6px;
+           background: #16202e; color: #fff; padding: 10px 18px; border-radius: 8px; z-index: 10;
            opacity: 0; transition: opacity .25s; pointer-events: none; }
   #toast.ver { opacity: 1; }
 
-  @media (max-width: 1000px) {
+  @media (max-width: 1100px) {
     main { grid-template-columns: 1fr; grid-template-rows: auto auto 70vh; }
-    nav { display: flex; overflow-x: auto; padding: 0; }
-    nav h2 { display: none; }
-    nav button { width: auto; white-space: nowrap; border-left: 0; border-bottom: 3px solid transparent; }
-    nav button.activo { border-bottom-color: #5aa0ff; }
+    nav { flex-direction: row; overflow-x: auto; padding: 8px; }
+    nav h2, .nav-pie { display: none; }
+    .tarjeta-mod { width: auto; min-width: 200px; }
     #cajetin { grid-template-columns: 70px 1fr 70px 70px; left: 12px; }
     header { flex-wrap: wrap; }
   }
@@ -152,51 +281,217 @@
 </head>
 <body>
 
+<!-- Iconos SVG reutilizables -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-perno" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M9 3h14l2 4-2 4H9L7 7z"/><path d="M12 11v18h8V11"/><path d="M12 15l8 2M12 19l8 2M12 23l8 2" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="i-tuerca" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M16 3l11.3 6.5v13L16 29 4.7 22.5v-13z"/><circle cx="16" cy="16" r="5.5"/><circle cx="16" cy="16" r="3.5" stroke-width="1" stroke-dasharray="2 1.5"/>
+    </symbol>
+    <symbol id="i-conjunto" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M10 2h12l1.5 3-1.5 3H10L8.5 5z"/><path d="M13 8v22h6V8"/><path d="M8 18h16l1.5 3-1.5 3H8l-1.5-3z" fill="currentColor" fill-opacity=".18"/>
+    </symbol>
+    <symbol id="i-escalera" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M4 28h6v-6h6v-6h6v-6h6"/><path d="M4 28V22h6M10 22v-6h6M16 16v-6h6" stroke-width="1.2"/><circle cx="24" cy="5" r="2"/>
+    </symbol>
+    <symbol id="i-pinon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M14 3h4l.7 3.2 2.6 1.1 2.8-1.8 2.8 2.8-1.8 2.8 1.1 2.6L29 14v4l-3.2.7-1.1 2.6 1.8 2.8-2.8 2.8-2.8-1.8-2.6 1.1L18 29h-4l-.7-3.2-2.6-1.1-2.8 1.8-2.8-2.8 1.8-2.8-1.1-2.6L3 18v-4l3.2-.7 1.1-2.6-1.8-2.8 2.8-2.8 2.8 1.8 2.6-1.1z"/>
+      <circle cx="16" cy="16" r="4.5"/><path d="M15 11.5h2v1.6h-2z" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-camara" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M4 10h5l2.5-3.5h9L23 10h5v16H4z"/><circle cx="16" cy="17.5" r="5.5"/>
+    </symbol>
+    <symbol id="i-ia" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M16 3l2.6 7.4L26 13l-7.4 2.6L16 23l-2.6-7.4L6 13l7.4-2.6z"/><path d="M25 21l1.2 3.3L29.5 25.5l-3.3 1.2L25 30l-1.2-3.3-3.3-1.2 3.3-1.2z" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="i-subir" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M16 21V6M10 12l6-6 6 6"/><path d="M5 20v6h22v-6"/>
+    </symbol>
+    <symbol id="i-regla" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M3 21L21 3l8 8-18 18z"/><path d="M8 16l2.5 2.5M11.5 12.5l2 2M15 9l2.5 2.5M18.5 5.5l2 2" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="i-material" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M4 11l12-6 12 6-12 6z"/><path d="M4 16l12 6 12-6M4 21l12 6 12-6"/>
+    </symbol>
+    <symbol id="i-carga" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M16 3v17M10 14l6 6 6-6"/><path d="M5 26h22" stroke-width="3"/>
+    </symbol>
+    <symbol id="i-calc" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <rect x="6" y="3" width="20" height="26" rx="3"/><path d="M10 7h12v5H10z"/><path d="M11 17h2M15 17h2M19 17h2M11 21h2M15 21h2M19 21h2M11 25h2M15 25h6"/>
+    </symbol>
+    <symbol id="i-mas" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M16 6v20M6 16h20"/></symbol>
+    <symbol id="i-pluma" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 26C10 12 18 6 27 5c-1 9-7 17-21 21z"/><path d="M6 26l10-10"/></symbol>
+    <symbol id="i-engranaje" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><circle cx="16" cy="16" r="5"/><path d="M16 3v5M16 24v5M3 16h5M24 16h5M6.8 6.8l3.5 3.5M21.7 21.7l3.5 3.5M6.8 25.2l3.5-3.5M21.7 10.3l3.5-3.5"/></symbol>
+    <symbol id="i-rayo" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M18 3L7 18h8l-2 11 12-16h-8z"/></symbol>
+    <symbol id="i-gota" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M16 4c5 7 9 11 9 16a9 9 0 0 1-18 0c0-5 4-9 9-16z"/></symbol>
+    <symbol id="i-todo" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="5" width="9" height="9" rx="2"/><rect x="18" y="5" width="9" height="9" rx="2"/><rect x="5" y="18" width="9" height="9" rx="2"/><rect x="18" y="18" width="9" height="9" rx="2"/></symbol>
+  </defs>
+</svg>
+
 <header>
-  <h1>Diseñador de Piezas 3D <small>medidas manuales · cálculo · exportación CAD</small></h1>
-  <button class="sec" id="btn-nueva" title="Asigna el siguiente número correlativo">Nueva pieza</button>
+  <div class="marca">
+    <div class="logo">⚙️</div>
+    <div><h1>Diseñador de Piezas 3D</h1><small>medidas manuales · cálculo · exportación CAD</small></div>
+  </div>
+  <button class="sec" id="btn-nueva" title="Asigna el siguiente número correlativo"><svg class="ico"><use href="#i-mas"/></svg>Nueva pieza</button>
   <button id="btn-dxf" title="Plano 2D para AutoCAD">Exportar DXF</button>
   <button id="btn-stl" title="Malla 3D para SolidWorks">Exportar STL</button>
 </header>
 
 <main>
   <!-- Menú de módulos -->
-  <nav id="menu">
-    <h2>Módulos</h2>
-    <button data-modulo="pernos" class="activo">Pernos y roscas<span class="etq">Rosca interna / externa</span></button>
-    <button disabled>Escalera / plataforma<span class="etq">Próximamente · 90 kg + herramientas</span></button>
-    <button disabled>Piñón con chavetero<span class="etq">Próximamente</span></button>
+  <nav id="menu" aria-label="Módulos">
+    <h2>Módulos de diseño</h2>
+    <button class="tarjeta-mod activo" data-vista="pernos">
+      <span class="t-ico"><svg><use href="#i-perno"/></svg></span>
+      <span class="t-txt"><b>Pernos y roscas</b><span>Rosca interna / externa, tuercas</span></span>
+      <span class="insignia lista">Listo</span>
+    </button>
+    <button class="tarjeta-mod" disabled title="Próximamente">
+      <span class="t-ico"><svg><use href="#i-escalera"/></svg></span>
+      <span class="t-txt"><b>Escalera / plataforma</b><span>Persona de 90 kg + herramientas</span></span>
+      <span class="insignia pronto">Pronto</span>
+    </button>
+    <button class="tarjeta-mod" disabled title="Próximamente">
+      <span class="t-ico"><svg><use href="#i-pinon"/></svg></span>
+      <span class="t-txt"><b>Piñón con chavetero</b><span>Engranaje recto, chaveta</span></span>
+      <span class="insignia pronto">Pronto</span>
+    </button>
     <h2>Herramientas</h2>
-    <button disabled>Foto + IA<span class="etq">Próximamente · proponer medidas</span></button>
+    <button class="tarjeta-mod" data-vista="foto">
+      <span class="t-ico"><svg><use href="#i-camara"/></svg></span>
+      <span class="t-txt"><b>Foto + IA</b><span>Saca una foto y la IA te dice qué medir</span></span>
+      <span class="insignia ia">IA</span>
+    </button>
+    <div class="nav-pie">Unidades: mm · N · MPa<br>Exporta DXF (AutoCAD) y STL (SolidWorks)</div>
   </nav>
 
-  <!-- Panel de medidas y cálculos -->
+  <!-- Panel -->
   <section id="panel">
-    <h2 id="mod-titulo"></h2>
-    <p class="desc" id="mod-desc"></p>
 
-    <h3>Medidas</h3>
-    <div id="campos"></div>
+    <!-- ===== Vista de módulo ===== -->
+    <div id="vista-modulo">
+      <div class="cab-vista">
+        <span class="t-ico"><svg id="mod-icono"><use href="#i-perno"/></svg></span>
+        <h2 id="mod-titulo"></h2>
+      </div>
+      <p class="desc" id="mod-desc"></p>
 
-    <h3>Material</h3>
-    <label class="nota" for="trabajo">Trabajo que soporta la pieza</label>
-    <select id="trabajo" class="ancho"></select>
-    <select id="material" class="ancho"></select>
-    <div id="mat-manual" hidden>
-      <input id="mat-nombre" class="ancho" placeholder="Nombre del material (ej. AISI 4140)">
-      <div class="fila2">
-        <div class="campo" style="grid-template-columns:1fr 70px"><label for="mat-re">Re (MPa)</label><input id="mat-re" type="number" value="400"></div>
-        <div class="campo" style="grid-template-columns:1fr 70px"><label for="mat-rm">Rm (MPa)</label><input id="mat-rm" type="number" value="600"></div>
+      <details class="sec" open>
+        <summary><svg class="ico"><use href="#i-regla"/></svg>Pieza y medidas</summary>
+        <div class="cuerpo">
+          <div id="selectores"></div>
+          <div class="etq-grupo">Medidas</div>
+          <div id="campos"></div>
+        </div>
+      </details>
+
+      <details class="sec" id="sec-extras" hidden open>
+        <summary><svg class="ico"><use href="#i-camara"/></svg>Medidas adicionales (de la foto)</summary>
+        <div class="cuerpo">
+          <p class="nota">Medidas que no corresponden a un campo del módulo. Se anotan en el plano DXF.</p>
+          <div id="extras"></div>
+        </div>
+      </details>
+
+      <details class="sec" open>
+        <summary><svg class="ico"><use href="#i-material"/></svg>Material</summary>
+        <div class="cuerpo">
+          <div class="etq-grupo">¿Qué trabajo soporta la pieza?</div>
+          <div class="fichas" id="trabajos"></div>
+          <div class="etq-grupo">Material recomendado</div>
+          <div class="materiales" id="materiales"></div>
+          <div id="mat-manual" hidden style="margin-top:8px">
+            <input id="mat-nombre" class="ancho" placeholder="Nombre del material (ej. AISI 4140)">
+            <div class="fila2" style="margin-top:6px">
+              <div class="campo" style="grid-template-columns:1fr 80px;margin:0"><label for="mat-re">Re (MPa)</label><input id="mat-re" type="number" value="400"></div>
+              <div class="campo" style="grid-template-columns:1fr 80px;margin:0"><label for="mat-rm">Rm (MPa)</label><input id="mat-rm" type="number" value="600"></div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="sec">
+        <summary><svg class="ico"><use href="#i-carga"/></svg>Cargas de trabajo</summary>
+        <div class="cuerpo"><div id="cargas" style="padding-top:4px"></div></div>
+      </details>
+
+      <details class="sec" open>
+        <summary><svg class="ico"><use href="#i-calc"/></svg>Cálculos</summary>
+        <div class="cuerpo">
+          <div class="medidor" id="medidor">
+            <div class="pista"><div class="marca-min"></div><div class="aguja" id="aguja"></div></div>
+            <div class="etqs"><span>0</span><span id="medidor-min">FS mín.</span><span id="medidor-max"></span></div>
+          </div>
+          <div id="veredicto" class="veredicto"></div>
+          <table class="res" id="resultados" style="margin-top:10px"></table>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Vista Foto + IA ===== -->
+    <div id="vista-foto" hidden>
+      <div class="cab-vista">
+        <span class="t-ico"><svg><use href="#i-ia"/></svg></span>
+        <h2>Foto + IA</h2>
+      </div>
+      <p class="desc">Saca o sube una foto de la pieza. La IA identifica la pieza y propone qué medidas tomar y con qué instrumento. Puedes corregir, agregar o quitar medidas antes de pasarlas al módulo.</p>
+
+      <div class="zona-foto" id="zona-foto">
+        <div class="vacia" id="foto-vacia">
+          <svg><use href="#i-camara"/></svg>
+          <p><b>Arrastra una foto aquí</b><br>o usa los botones de abajo</p>
+        </div>
+        <img id="foto-img" alt="Foto de la pieza" hidden>
+      </div>
+      <div class="botones">
+        <button class="claro" id="btn-camara"><svg class="ico"><use href="#i-camara"/></svg>Sacar foto</button>
+        <button class="claro" id="btn-subir"><svg class="ico"><use href="#i-subir"/></svg>Subir imagen</button>
+      </div>
+      <input type="file" id="in-foto" accept="image/*" hidden>
+      <input type="file" id="in-foto-cam" accept="image/*" capture="environment" hidden>
+
+      <details class="sec" open>
+        <summary><svg class="ico"><use href="#i-regla"/></svg>Datos para la IA</summary>
+        <div class="cuerpo">
+          <div class="etq-grupo">Módulo de destino</div>
+          <div class="fichas" id="ia-destino"></div>
+          <div class="etq-grupo">Notas (opcional)</div>
+          <textarea id="ia-notas" class="ancho" rows="2" placeholder="Ej.: la moneda de la foto mide 25 mm; la pieza es de una máquina envasadora…"></textarea>
+        </div>
+      </details>
+
+      <details class="sec" id="sec-clave">
+        <summary><svg class="ico"><use href="#i-ia"/></svg>Conexión con la IA (Claude)</summary>
+        <div class="cuerpo">
+          <p class="nota">Se necesita una clave de API de Anthropic (console.anthropic.com). La clave queda en este navegador y se envía solo a api.anthropic.com. Úsala sólo en tu propio equipo.</p>
+          <input id="ia-clave" class="ancho" type="password" placeholder="sk-ant-…" autocomplete="off">
+          <label class="nota" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="ia-recordar"> Recordar en este equipo</label>
+        </div>
+      </details>
+
+      <div class="botones">
+        <button class="grande btn-ia" id="btn-analizar"><svg class="ico"><use href="#i-ia"/></svg>Analizar con IA</button>
+      </div>
+      <div class="botones" style="margin-top:6px">
+        <button class="claro" id="btn-plantilla" title="Sin internet: carga la lista estándar de medidas del módulo">Lista estándar sin IA</button>
+      </div>
+
+      <div id="ia-estado"></div>
+      <div id="ia-resultado" hidden>
+        <div class="ident" id="ia-ident"></div>
+        <div class="etq-grupo" style="margin-top:14px">Medidas a tomar <span style="font-weight:400;text-transform:none">(edita, desmarca o agrega)</span></div>
+        <div id="ia-medidas"></div>
+        <div class="botones">
+          <button class="claro" id="btn-agregar-med"><svg class="ico"><use href="#i-mas"/></svg>Agregar medida</button>
+        </div>
+        <div class="botones">
+          <button class="grande" id="btn-aplicar">Usar estas medidas en el módulo →</button>
+        </div>
       </div>
     </div>
-    <p class="nota" id="mat-info"></p>
-
-    <h3>Cargas de trabajo</h3>
-    <div id="cargas"></div>
-
-    <h3>Cálculos</h3>
-    <table class="res" id="resultados"></table>
-    <div id="veredicto" class="veredicto"></div>
   </section>
 
   <!-- Visor 3D -->
@@ -204,8 +499,8 @@
     <div id="visor"></div>
     <div class="herr-visor">
       <button id="btn-encuadrar">Encuadrar</button>
-      <button id="btn-girar">Girar: no</button>
-      <button id="btn-alambre">Alambre: no</button>
+      <button id="btn-girar">Girar</button>
+      <button id="btn-alambre">Alambre</button>
     </div>
     <div id="aviso-3d"></div>
 
@@ -221,7 +516,15 @@
   </section>
 </main>
 
-<div id="toast"></div>
+<dialog id="dlg-camara">
+  <video id="cam-video" autoplay playsinline muted></video>
+  <div class="botones">
+    <button class="claro" id="cam-cancelar">Cancelar</button>
+    <button class="grande" id="cam-capturar"><svg class="ico"><use href="#i-camara"/></svg>Capturar</button>
+  </div>
+</dialog>
+
+<div id="toast" role="status"></div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -441,29 +744,32 @@ const ISO = {
 const moduloPernos = {
   id: 'pernos',
   titulo: 'Pernos y roscas',
+  icono: 'i-perno',
   descripcion: 'Perno de cabeza hexagonal (rosca externa), tuerca (rosca interna) o conjunto. Elegir una medida ISO rellena valores; todos se pueden editar a mano.',
 
   selectores: [
-    { id: 'tipo', etiqueta: 'Pieza', opciones: [['perno', 'Perno (rosca externa)'], ['tuerca', 'Tuerca (rosca interna)'], ['conjunto', 'Conjunto perno + tuerca']], valor: 'perno' },
-    { id: 'norma', etiqueta: 'Medida normalizada', opciones: [...Object.keys(ISO).map(k => [k, k + ' × ' + ISO[k].p]), ['libre', 'Personalizada']], valor: 'M10' },
+    { id: 'tipo', etiqueta: 'Tipo de pieza', estilo: 'segmentos', valor: 'perno',
+      opciones: [['perno', 'Perno', 'i-perno'], ['tuerca', 'Tuerca', 'i-tuerca'], ['conjunto', 'Conjunto', 'i-conjunto']] },
+    { id: 'norma', etiqueta: 'Medida normalizada (ISO, paso grueso)', estilo: 'fichas', valor: 'M10',
+      opciones: [...Object.keys(ISO).map(k => [k, k]), ['libre', '✎ A mano']] },
   ],
 
   campos: [
-    { id: 'd',  etiqueta: 'Diámetro nominal d',      uni: 'mm', min: 1,   max: 200,  valor: 10 },
-    { id: 'p',  etiqueta: 'Paso p',                  uni: 'mm', min: 0.2, max: 8,    valor: 1.5, paso: 0.05 },
-    { id: 'L',  etiqueta: 'Longitud del vástago L',  uni: 'mm', min: 2,   max: 1000, valor: 50, solo: ['perno', 'conjunto'] },
-    { id: 'b',  etiqueta: 'Longitud roscada b',      uni: 'mm', min: 1,   max: 1000, valor: 26, solo: ['perno', 'conjunto'] },
-    { id: 's',  etiqueta: 'Entre caras s',           uni: 'mm', min: 2,   max: 300,  valor: 16 },
-    { id: 'k',  etiqueta: 'Altura de cabeza k',      uni: 'mm', min: 0.5, max: 200,  valor: 6.4, solo: ['perno', 'conjunto'] },
-    { id: 'm',  etiqueta: 'Altura de tuerca m',      uni: 'mm', min: 0.5, max: 200,  valor: 8.4, solo: ['tuerca', 'conjunto'] },
+    { id: 'd',  etiqueta: 'Diámetro nominal d',      uni: 'mm', min: 1,   max: 200,  valor: 10, rmax: 48, instrumento: 'Pie de rey', comoMedir: 'Exterior de la rosca, sobre las crestas.' },
+    { id: 'p',  etiqueta: 'Paso p',                  uni: 'mm', min: 0.2, max: 8,    valor: 1.5, paso: 0.05, rmax: 5, instrumento: 'Galga de roscas', comoMedir: 'Distancia entre dos crestas consecutivas.' },
+    { id: 'L',  etiqueta: 'Longitud del vástago L',  uni: 'mm', min: 2,   max: 1000, valor: 50, rmax: 300, solo: ['perno', 'conjunto'], instrumento: 'Pie de rey', comoMedir: 'Desde la cara de apoyo de la cabeza hasta la punta.' },
+    { id: 'b',  etiqueta: 'Longitud roscada b',      uni: 'mm', min: 1,   max: 1000, valor: 26, rmax: 300, solo: ['perno', 'conjunto'], instrumento: 'Pie de rey', comoMedir: 'Desde la punta hasta el último filete completo.' },
+    { id: 's',  etiqueta: 'Entre caras s',           uni: 'mm', min: 2,   max: 300,  valor: 16, rmax: 80, instrumento: 'Pie de rey / llave', comoMedir: 'Entre dos caras planas opuestas del hexágono.' },
+    { id: 'k',  etiqueta: 'Altura de cabeza k',      uni: 'mm', min: 0.5, max: 200,  valor: 6.4, rmax: 40, solo: ['perno', 'conjunto'], instrumento: 'Pie de rey', comoMedir: 'Altura de la cabeza, sin contar el vástago.' },
+    { id: 'm',  etiqueta: 'Altura de tuerca m',      uni: 'mm', min: 0.5, max: 200,  valor: 8.4, rmax: 40, solo: ['tuerca', 'conjunto'], instrumento: 'Pie de rey', comoMedir: 'Espesor de la tuerca entre sus dos caras.' },
   ],
 
   cargas: [
-    { id: 'F',  etiqueta: 'Carga axial (tracción) F', uni: 'kN', min: 0, max: 5000, valor: 10 },
-    { id: 'V',  etiqueta: 'Carga cortante V',         uni: 'kN', min: 0, max: 5000, valor: 3 },
+    { id: 'F',  etiqueta: 'Carga axial (tracción) F', uni: 'kN', min: 0, max: 5000, valor: 10, rmax: 200 },
+    { id: 'V',  etiqueta: 'Carga cortante V',         uni: 'kN', min: 0, max: 5000, valor: 3, rmax: 100 },
     { id: 'n',  etiqueta: 'Planos de corte',          uni: '',   min: 1, max: 4,    valor: 1, paso: 1 },
     { id: 'K',  etiqueta: 'Coef. de par K',           uni: '',   min: 0.05, max: 0.5, valor: 0.2, paso: 0.01 },
-    { id: 'FSr', etiqueta: 'Factor de seguridad mínimo', uni: '', min: 1, max: 10, valor: 2, paso: 0.1 },
+    { id: 'FSr', etiqueta: 'Factor de seguridad mínimo', uni: '', min: 1, max: 10, valor: 2, paso: 0.1, rmax: 5 },
   ],
 
   trabajos: [
@@ -623,7 +929,7 @@ const moduloPernos = {
       ? `CUMPLE: FS = ${FSfmt(FSvm)} ≥ ${fmt(c.FSr, 1)}`
       : !okFS ? `NO CUMPLE: FS = ${FSfmt(FSvm)} < ${fmt(c.FSr, 1)}. Aumente d o use un material más resistente.`
               : `NO CUMPLE: tuerca m = ${fmt(v.m, 1)} mm < Lₑ = ${fmt(Le, 1)} mm.`;
-    return { filas, ok, msg };
+    return { filas, ok, msg, fs: FSvm, fsMin: c.FSr };
   },
 
   /* Plano 2D. Origen = intersección eje / cara de apoyo de la cabeza. */
@@ -803,51 +1109,82 @@ function aplicarAlambre() {
    Estado e interfaz
    ===================================================================== */
 const estado = {
+  vista: 'pernos',
   modulo: null,
   valores: {},     // medidas y cargas
+  crudos: {},      // texto escrito en cada campo (para validar)
   sel: {},         // selectores
+  trabajo: 'todos',
+  material: null,  // id del material elegido o 'manual'
+  extras: [],      // medidas adicionales {nombre, valor, unidad}
   errores: {},
   numero: 1,
 };
 
+const ICONOS_TRABAJO = { todos: 'i-todo', ligera: 'i-pluma', media: 'i-engranaje', alta: 'i-rayo', corrosivo: 'i-gota' };
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const icono = (id, cls = '') => `<svg class="${cls}"><use href="#${id}"/></svg>`;
+
 function leerValorActual(id) { return estado.valores[id]; }
 
+/* ---------- Selectores (segmentos con icono o fichas) ---------- */
 function ponerSelector(id, valor) {
   estado.sel[id] = valor;
-  const el = $('sel-' + id); if (el) el.value = valor;
+  document.querySelectorAll(`[data-sel="${id}"] button`).forEach(b => b.classList.toggle('activo', b.dataset.valor === valor));
 }
 
+function crearSelector(def, contenedor) {
+  const etq = document.createElement('div');
+  etq.className = 'etq-grupo'; etq.textContent = def.etiqueta;
+  const grupo = document.createElement('div');
+  grupo.className = def.estilo === 'segmentos' ? 'segmentos' : 'fichas';
+  grupo.dataset.sel = def.id;
+  grupo.setAttribute('role', 'radiogroup');
+  for (const [v, t, ico] of def.opciones) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.dataset.valor = v;
+    b.innerHTML = (ico ? icono(ico) : '') + `<span>${esc(t)}</span>`;
+    b.addEventListener('click', () => {
+      ponerSelector(def.id, v);
+      estado.modulo.alCambiarSelector?.(def.id, v, ponerValores);
+      actualizar(true);
+    });
+    grupo.appendChild(b);
+  }
+  contenedor.append(etq, grupo);
+  ponerSelector(def.id, estado.sel[def.id]);
+}
+
+/* ---------- Campo numérico + deslizador ---------- */
 function crearCampo(def, contenedor) {
   const div = document.createElement('div');
   div.className = 'campo'; div.id = 'c-' + def.id;
-  div.innerHTML = `<label for="in-${def.id}">${def.etiqueta}</label>
+  const rmax = def.rmax ?? def.max;
+  // paso "redondo" del deslizador: 1, 0,1, 0,01… según el rango
+  const pasoRg = def.paso ?? 10 ** Math.floor(Math.log10((rmax - def.min) / 150));
+  div.innerHTML = `<label for="in-${def.id}">${esc(def.etiqueta)}</label>
     <input id="in-${def.id}" type="number" inputmode="decimal" step="${def.paso ?? 'any'}" min="${def.min}" max="${def.max}">
-    <span class="uni">${def.uni}</span>`;
+    <span class="uni">${esc(def.uni)}</span>
+    <input type="range" id="rg-${def.id}" min="${def.min}" max="${rmax}" step="${pasoRg}" aria-label="${esc(def.etiqueta)}">`;
   contenedor.appendChild(div);
-  const inp = div.querySelector('input');
+  const inp = div.querySelector('input[type=number]');
+  const rg = div.querySelector('input[type=range]');
   inp.value = estado.valores[def.id];
+  rg.value = estado.valores[def.id];
   inp.addEventListener('input', () => {
     const n = parseFloat(String(inp.value).replace(',', '.'));
-    if (Number.isFinite(n)) estado.valores[def.id] = n;
+    if (Number.isFinite(n)) { estado.valores[def.id] = n; rg.value = n; }
     estado.crudos[def.id] = inp.value;
     estado.modulo.alEditarCampo?.(def.id);
     actualizar(false);
   });
-}
-
-function crearSelector(def, contenedor) {
-  const div = document.createElement('div');
-  div.className = 'campo'; div.style.gridTemplateColumns = '1fr 200px';
-  div.innerHTML = `<label for="sel-${def.id}">${def.etiqueta}</label><select id="sel-${def.id}"></select>`;
-  const s = div.querySelector('select');
-  for (const [v, t] of def.opciones) s.add(new Option(t, v));
-  s.value = estado.sel[def.id];
-  s.addEventListener('change', () => {
-    estado.sel[def.id] = s.value;
-    estado.modulo.alCambiarSelector?.(def.id, s.value, ponerValores);
-    actualizar(true);
+  rg.addEventListener('input', () => {
+    const dec = Math.max(0, -Math.floor(Math.log10(pasoRg)));
+    const n = Number(Number(rg.value).toFixed(dec));
+    estado.valores[def.id] = n; estado.crudos[def.id] = String(n); inp.value = n;
+    estado.modulo.alEditarCampo?.(def.id);
+    actualizar(false);
   });
-  contenedor.appendChild(div);
 }
 
 function ponerValores(obj) {
@@ -855,46 +1192,83 @@ function ponerValores(obj) {
     estado.valores[k] = Math.round(v * 1000) / 1000;
     estado.crudos[k] = String(estado.valores[k]);
     const el = $('in-' + k); if (el) el.value = estado.valores[k];
+    const rg = $('rg-' + k); if (rg) rg.value = estado.valores[k];
   }
+}
+
+/* ---------- Vistas (menú) ---------- */
+function mostrarVista(id) {
+  estado.vista = id;
+  const esFoto = id === 'foto';
+  $('vista-modulo').hidden = esFoto;
+  $('vista-foto').hidden = !esFoto;
+  document.querySelectorAll('.tarjeta-mod[data-vista]').forEach(b => b.classList.toggle('activo', b.dataset.vista === id));
+  if (!esFoto && (!estado.modulo || estado.modulo.id !== id)) cargarModulo(id);
+  $('panel').scrollTop = 0;
 }
 
 function cargarModulo(id) {
   const m = MODULOS[id];
   estado.modulo = m;
   estado.valores = {}; estado.crudos = {}; estado.sel = {};
+  estado.extras = [];
   for (const c of [...m.campos, ...m.cargas]) { estado.valores[c.id] = c.valor; estado.crudos[c.id] = String(c.valor); }
   for (const s of m.selectores) estado.sel[s.id] = s.valor;
+  estado.trabajo = 'todos';
+  estado.material = m.materialDefecto;
 
   $('mod-titulo').textContent = m.titulo;
   $('mod-desc').textContent = m.descripcion;
+  $('mod-icono').innerHTML = `<use href="#${m.icono}"/>`;
+  const cs = $('selectores'); cs.innerHTML = '';
+  m.selectores.forEach(s => crearSelector(s, cs));
   const cc = $('campos'); cc.innerHTML = '';
-  m.selectores.forEach(s => crearSelector(s, cc));
   m.campos.forEach(c => crearCampo(c, cc));
   const cg = $('cargas'); cg.innerHTML = '';
   m.cargas.forEach(c => crearCampo(c, cg));
 
-  // materiales
-  const tr = $('trabajo'); tr.innerHTML = '';
-  for (const [v, t] of m.trabajos) tr.add(new Option(t, v));
-  llenarMateriales(m.materialDefecto);
-
-  document.querySelectorAll('#menu button[data-modulo]').forEach(b => b.classList.toggle('activo', b.dataset.modulo === id));
+  // trabajos
+  const tr = $('trabajos'); tr.innerHTML = '';
+  for (const [v, t] of m.trabajos) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.dataset.valor = v;
+    b.innerHTML = `${icono(ICONOS_TRABAJO[v] ?? 'i-todo', 'ico')} ${esc(t.replace(/\s*\(.*\)$/, ''))}`;
+    b.title = t;
+    b.addEventListener('click', () => { estado.trabajo = v; dibujarMateriales(); actualizar(false); });
+    tr.appendChild(b);
+  }
+  dibujarMateriales();
+  dibujarExtras();
   actualizar(true);
 }
 
-function llenarMateriales(preferido) {
-  const m = estado.modulo, t = $('trabajo').value, sel = $('material');
-  const previo = preferido ?? sel.value;
-  sel.innerHTML = '';
+/* ---------- Materiales como tarjetas ---------- */
+function dibujarMateriales() {
+  const m = estado.modulo, t = estado.trabajo;
+  document.querySelectorAll('#trabajos button').forEach(b => b.classList.toggle('activo', b.dataset.valor === t));
   const lista = m.materiales.filter(x => t === 'todos' || x.trabajos.includes(t));
-  for (const x of lista) sel.add(new Option(`${x.nombre} — Re ${x.Re} / Rm ${x.Rm} MPa`, x.id));
-  sel.add(new Option('Otro (escribir a mano)…', 'manual'));
-  sel.value = lista.some(x => x.id === previo) || previo === 'manual' ? previo : (lista[0]?.id ?? 'manual');
+  if (estado.material !== 'manual' && !lista.some(x => x.id === estado.material)) estado.material = lista[0]?.id ?? 'manual';
+  const maxRe = Math.max(...m.materiales.map(x => x.Re));
+  const cont = $('materiales'); cont.innerHTML = '';
+  for (const x of lista) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'mat' + (estado.material === x.id ? ' activo' : '');
+    b.innerHTML = `<b>${esc(x.nombre)}</b><span class="re">Re ${x.Re} · Rm ${x.Rm} MPa</span>
+      <span class="barra"><i style="width:${(x.Re / maxRe * 100).toFixed(0)}%"></i></span>
+      <span class="uso">${esc(x.uso)}</span>`;
+    b.addEventListener('click', () => { estado.material = x.id; dibujarMateriales(); actualizar(false); });
+    cont.appendChild(b);
+  }
+  const man = document.createElement('button');
+  man.type = 'button'; man.className = 'mat' + (estado.material === 'manual' ? ' activo' : '');
+  man.innerHTML = `<b>✎ Otro material (escribir a mano)</b><span class="re">Re / Rm propios</span>`;
+  man.addEventListener('click', () => { estado.material = 'manual'; dibujarMateriales(); actualizar(false); });
+  cont.appendChild(man);
+  $('mat-manual').hidden = estado.material !== 'manual';
 }
 
 function materialActual() {
-  const id = $('material').value;
-  if (id === 'manual') {
+  if (estado.material === 'manual') {
     const Re = parseFloat($('mat-re').value), Rm = parseFloat($('mat-rm').value);
     return {
       nombre: $('mat-nombre').value.trim() || 'Material a mano',
@@ -903,9 +1277,26 @@ function materialActual() {
       uso: 'Propiedades ingresadas manualmente.',
     };
   }
-  return estado.modulo.materiales.find(x => x.id === id);
+  return estado.modulo.materiales.find(x => x.id === estado.material);
 }
 
+/* ---------- Medidas adicionales ---------- */
+function dibujarExtras() {
+  const cont = $('extras'); cont.innerHTML = '';
+  $('sec-extras').hidden = estado.extras.length === 0;
+  estado.extras.forEach((x, i) => {
+    const fila = document.createElement('div');
+    fila.className = 'extra';
+    fila.innerHTML = `<input value="${esc(x.nombre)}" aria-label="Nombre"><input type="number" step="any" value="${x.valor ?? ''}" aria-label="Valor"><span class="nota" style="margin:0">${esc(x.unidad)}</span><button class="btn-x" title="Quitar">✕</button>`;
+    const [n, v] = fila.querySelectorAll('input');
+    n.addEventListener('input', () => { x.nombre = n.value; });
+    v.addEventListener('input', () => { const f = parseFloat(v.value); x.valor = Number.isFinite(f) ? f : null; });
+    fila.querySelector('button').addEventListener('click', () => { estado.extras.splice(i, 1); dibujarExtras(); });
+    cont.appendChild(fila);
+  });
+}
+
+/* ---------- Validación ---------- */
 function validar() {
   const m = estado.modulo, err = {};
   for (const c of [...m.campos, ...m.cargas]) {
@@ -929,20 +1320,22 @@ function validar() {
   return Object.keys(err).length === 0;
 }
 
+/* ---------- Actualización general ---------- */
 let ultimaGeo = '';
+function ponerVeredicto(ok, texto) {
+  $('veredicto').className = 'veredicto ' + (ok ? 'ok' : 'mal');
+  $('veredicto').textContent = (ok ? '✔ ' : '✖ ') + texto;
+}
+
 function actualizar(encuadrar) {
   const m = estado.modulo;
   const valido = validar();
   const mat = materialActual();
-  $('mat-manual').hidden = $('material').value !== 'manual';
-  $('mat-info').textContent = mat?.uso ?? '';
-
-  // cajetín
+  $('mat-manual').hidden = estado.material !== 'manual';
   $('caj-mat').textContent = mat?.nombre ?? '—';
 
   if (!valido) {
-    $('veredicto').className = 'veredicto mal';
-    $('veredicto').textContent = 'Corrija las medidas marcadas en rojo. La vista muestra la última pieza válida.';
+    ponerVeredicto(false, 'Corrija las medidas marcadas en rojo. La vista muestra la última pieza válida.');
     return;
   }
   const v = estado.valores;
@@ -960,8 +1353,7 @@ function actualizar(encuadrar) {
   // cálculos
   const tabla = $('resultados'); tabla.innerHTML = '';
   if (!mat || !Number.isFinite(mat.Re) || !Number.isFinite(mat.Rm)) {
-    $('veredicto').className = 'veredicto mal';
-    $('veredicto').textContent = 'Ingrese Re y Rm válidos para el material.';
+    ponerVeredicto(false, 'Ingrese Re y Rm válidos para el material.');
     return;
   }
   const r = m.calcular(v, v, mat, estado.sel);
@@ -972,8 +1364,315 @@ function actualizar(encuadrar) {
     if (ok === true) td.className = 'ok';
     if (ok === false) td.className = 'mal';
   }
-  $('veredicto').className = 'veredicto ' + (r.ok ? 'ok' : 'mal');
-  $('veredicto').textContent = r.msg;
+  ponerVeredicto(r.ok, r.msg);
+  // medidor: FS mínimo en el centro, doble del mínimo a la derecha
+  if (Number.isFinite(r.fsMin)) {
+    const fs = Number.isFinite(r.fs) ? r.fs : 2 * r.fsMin;
+    const pos = Math.max(0, Math.min(1, fs / (2 * r.fsMin)));
+    $('aguja').style.left = (pos * 100).toFixed(1) + '%';
+    $('aguja').style.borderColor = r.ok ? 'var(--ok)' : 'var(--mal)';
+    $('medidor-min').textContent = 'FS mín. ' + fmt(r.fsMin, 1);
+    $('medidor-max').textContent = fmt(2 * r.fsMin, 1) + '+';
+  }
+}
+
+/* =====================================================================
+   Foto + IA
+   ===================================================================== */
+const foto = {
+  imagen: null,          // { base64, tipo, url }
+  destino: 'auto',
+  resultado: null,       // respuesta de la IA
+  medidas: [],           // filas editables
+  sinIA: false,
+};
+
+// Módulos que la IA conoce. Los no implementados sirven para identificar la pieza.
+const CATALOGO_IA = {
+  pernos: { nombre: 'Pernos y roscas', listo: true },
+  escalera: { nombre: 'Escalera / plataforma', listo: false },
+  pinon: { nombre: 'Piñón con chavetero', listo: false },
+};
+
+function dibujarDestinos() {
+  const cont = $('ia-destino'); cont.innerHTML = '';
+  for (const [v, t] of [['auto', 'Que decida la IA'], ...Object.entries(CATALOGO_IA).map(([k, x]) => [k, x.nombre])]) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = t; b.dataset.valor = v;
+    b.classList.toggle('activo', foto.destino === v);
+    b.addEventListener('click', () => { foto.destino = v; dibujarDestinos(); });
+    cont.appendChild(b);
+  }
+}
+
+/** Reduce la imagen (lado mayor 1568 px) y la pasa a JPEG base64. */
+function prepararImagen(fuente) {
+  return new Promise((resolve, reject) => {
+    const procesar = (img, w, h) => {
+      const k = Math.min(1, 1568 / Math.max(w, h));
+      const c = document.createElement('canvas');
+      c.width = Math.round(w * k); c.height = Math.round(h * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      const url = c.toDataURL('image/jpeg', 0.85);
+      resolve({ url, tipo: 'image/jpeg', base64: url.split(',')[1] });
+    };
+    if (fuente instanceof HTMLVideoElement) return procesar(fuente, fuente.videoWidth, fuente.videoHeight);
+    const img = new Image();
+    img.onload = () => { procesar(img, img.naturalWidth, img.naturalHeight); URL.revokeObjectURL(img.src); };
+    img.onerror = () => reject(new Error('No se pudo leer la imagen.'));
+    img.src = URL.createObjectURL(fuente);
+  });
+}
+
+async function ponerFoto(fuente) {
+  try {
+    foto.imagen = await prepararImagen(fuente);
+    $('foto-img').src = foto.imagen.url;
+    $('foto-img').hidden = false;
+    $('foto-vacia').hidden = true;
+    $('ia-estado').innerHTML = '';
+  } catch (e) {
+    mostrarEstadoIA('mal', e.message);
+  }
+}
+
+/* Cámara: getUserMedia si existe; si no, el selector de archivos con capture (móviles) */
+let flujoCamara = null;
+async function abrirCamara() {
+  if (!navigator.mediaDevices?.getUserMedia) return $('in-foto-cam').click();
+  try {
+    flujoCamara = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 } }, audio: false });
+    $('cam-video').srcObject = flujoCamara;
+    $('dlg-camara').showModal();
+  } catch (e) {
+    console.warn(e);
+    toast('No se pudo abrir la cámara; elige una imagen.');
+    $('in-foto-cam').click();
+  }
+}
+function cerrarCamara() {
+  flujoCamara?.getTracks().forEach(t => t.stop());
+  flujoCamara = null;
+  if ($('dlg-camara').open) $('dlg-camara').close();
+}
+
+function mostrarEstadoIA(tipo, html) {
+  $('ia-estado').innerHTML = tipo === 'cargando'
+    ? `<div class="cargando"><span class="giro"></span>${html}</div>`
+    : `<div class="aviso ${tipo}">${html}</div>`;
+}
+
+/* Esquema de la respuesta (salida estructurada) */
+const ESQUEMA_IA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['pieza_identificada', 'modulo_sugerido', 'tipo_pieza', 'confianza', 'observaciones', 'medidas'],
+  properties: {
+    pieza_identificada: { type: 'string' },
+    modulo_sugerido: { type: 'string', enum: ['pernos', 'escalera', 'pinon', 'otro'] },
+    tipo_pieza: { type: 'string', enum: ['perno', 'tuerca', 'conjunto', 'otro'] },
+    confianza: { type: 'string', enum: ['alta', 'media', 'baja'] },
+    observaciones: { type: 'string' },
+    medidas: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['campo', 'nombre', 'simbolo', 'unidad', 'valor_estimado', 'instrumento', 'como_medir'],
+        properties: {
+          campo: { type: 'string' },
+          nombre: { type: 'string' },
+          simbolo: { type: 'string' },
+          unidad: { type: 'string' },
+          valor_estimado: { anyOf: [{ type: 'number' }, { type: 'null' }] },
+          instrumento: { type: 'string' },
+          como_medir: { type: 'string' },
+        },
+      },
+    },
+  },
+};
+
+function promptIA() {
+  const camposPernos = MODULOS.pernos.campos.map(c => `  - "${c.id}": ${c.etiqueta} (${c.uni})`).join('\n');
+  const destino = foto.destino === 'auto' ? 'Decide tú a qué módulo corresponde la pieza.' : `El usuario indica que la pieza corresponde al módulo "${foto.destino}".`;
+  const notas = $('ia-notas').value.trim();
+  return `Eres un asistente de diseño mecánico. Mira la foto de una pieza mecánica real.
+
+Tareas:
+1. Identifica la pieza (nombre técnico en español) y elige el módulo de la herramienta:
+   - "pernos": pernos, tornillos, tuercas, espárragos, varillas roscadas (tipo_pieza: perno, tuerca o conjunto).
+   - "escalera": escaleras, plataformas, peldaños, barandas.
+   - "pinon": piñones, engranajes, ruedas dentadas con chavetero.
+   - "otro": cualquier otra pieza.
+   ${destino}
+2. Lista TODAS las medidas que hay que tomar a la pieza real para modelarla y fabricarla (incluye las de formas irregulares: chaflanes, agujeros, radios, ranuras, etc.).
+3. Para cada medida indica el instrumento (pie de rey, micrómetro, galga de roscas, cinta métrica, transportador…) y cómo medirla, en una frase corta.
+
+Campos del módulo "pernos" (usa exactamente estos ids en "campo" cuando la medida corresponda):
+${camposPernos}
+Si una medida no corresponde a ninguno de esos campos, pon "campo": "adicional".
+
+Reglas para "valor_estimado": estima un valor SOLO si en la foto hay una referencia de tamaño (regla, moneda, escala, marca de rosca legible como "M10"). Si no la hay, usa null. No inventes medidas.
+En "observaciones" explica en 1–3 frases en qué te basaste y qué no se puede saber desde la foto.
+Responde en español. Unidades en mm salvo que corresponda otra.${notas ? `\n\nNotas del usuario: ${notas}` : ''}`;
+}
+
+/* Carga el SDK oficial de Anthropic sólo cuando se necesita (si no hay internet, el resto sigue funcionando) */
+let sdkAnthropic = null;
+async function cargarSDK() {
+  if (!sdkAnthropic) sdkAnthropic = (await import('https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@1.7.0/+esm')).default;
+  return sdkAnthropic;
+}
+
+async function analizarIA() {
+  if (!foto.imagen) return mostrarEstadoIA('mal', 'Primero saca o sube una foto de la pieza.');
+  const clave = $('ia-clave').value.trim();
+  if (!clave) {
+    $('sec-clave').open = true;
+    $('ia-clave').focus();
+    return mostrarEstadoIA('mal', 'Falta la clave de API de Anthropic. También puedes usar <b>Lista estándar sin IA</b>.');
+  }
+  if ($('ia-recordar').checked) almacen.guardar('disenador3d.claveIA', clave);
+
+  $('btn-analizar').disabled = true;
+  mostrarEstadoIA('cargando', 'La IA está mirando la foto… (10–40 s)');
+  let Anthropic;
+  try {
+    Anthropic = await cargarSDK();
+  } catch (e) {
+    console.error(e);
+    $('btn-analizar').disabled = false;
+    return mostrarEstadoIA('mal', 'No se pudo cargar la librería de la IA (¿sin internet?). Usa <b>Lista estándar sin IA</b>.');
+  }
+  try {
+    const cliente = new Anthropic({ apiKey: clave, dangerouslyAllowBrowser: true });
+    const resp = await cliente.beta.messages.create({
+      model: 'claude-opus-5-5',
+      max_tokens: 16000,
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',   // si el modelo rechaza la petición, el servidor reintenta con otro modelo
+      output_config: { effort: 'medium', format: { type: 'json_schema', schema: ESQUEMA_IA } },
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: foto.imagen.tipo, data: foto.imagen.base64 } },
+          { type: 'text', text: promptIA() },
+        ],
+      }],
+    });
+    if (resp.stop_reason === 'refusal') throw new Error('La IA no pudo analizar esta imagen. Prueba con otra foto.');
+    if (resp.stop_reason === 'max_tokens') throw new Error('La respuesta de la IA quedó incompleta. Inténtalo de nuevo.');
+    const texto = resp.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const datos = JSON.parse(texto);
+    foto.sinIA = false;
+    mostrarResultadoIA(datos);
+    $('ia-estado').innerHTML = '';
+  } catch (e) {
+    console.error(e);
+    let msg = e.message || String(e);
+    if (e instanceof Anthropic.AuthenticationError) msg = 'La clave de API no es válida.';
+    else if (e instanceof Anthropic.PermissionDeniedError) msg = 'La clave no tiene permiso para usar este modelo.';
+    else if (e instanceof Anthropic.RateLimitError) msg = 'Demasiadas peticiones; espera unos segundos y reintenta.';
+    else if (e instanceof Anthropic.APIConnectionError) msg = 'No hay conexión con la IA (¿sin internet?).';
+    else if (e instanceof SyntaxError) msg = 'La respuesta de la IA no se pudo leer. Reintenta.';
+    mostrarEstadoIA('mal', esc(msg) + '<br>Puedes seguir con <b>Lista estándar sin IA</b>.');
+  } finally {
+    $('btn-analizar').disabled = false;
+  }
+}
+
+/* Sin IA: la lista de medidas del módulo, sin valores (útil sin internet) */
+function plantillaSinIA() {
+  const modId = foto.destino !== 'auto' && CATALOGO_IA[foto.destino]?.listo ? foto.destino : 'pernos';
+  const m = MODULOS[modId];
+  foto.sinIA = true;
+  mostrarResultadoIA({
+    pieza_identificada: m.titulo + ' (lista estándar)',
+    modulo_sugerido: modId,
+    tipo_pieza: 'perno',
+    confianza: null,
+    observaciones: 'Lista de medidas del módulo, sin análisis de la foto. Completa los valores medidos.',
+    medidas: m.campos.map(c => ({
+      campo: c.id, nombre: c.etiqueta, simbolo: c.id, unidad: c.uni, valor_estimado: null,
+      instrumento: c.instrumento ?? '', como_medir: c.comoMedir ?? '',
+    })),
+  });
+}
+
+function mostrarResultadoIA(datos) {
+  foto.resultado = datos;
+  const idsValidos = new Set(MODULOS.pernos.campos.map(c => c.id));
+  foto.medidas = (datos.medidas ?? []).map(x => ({
+    usar: true,
+    campo: idsValidos.has(x.campo) && datos.modulo_sugerido === 'pernos' ? x.campo : 'adicional',
+    nombre: x.nombre || x.simbolo || 'Medida',
+    simbolo: x.simbolo || '',
+    unidad: x.unidad || 'mm',
+    valor: Number.isFinite(x.valor_estimado) ? x.valor_estimado : null,
+    instrumento: x.instrumento || '',
+    como: x.como_medir || '',
+  }));
+  const mod = CATALOGO_IA[datos.modulo_sugerido];
+  const conf = datos.confianza ? `<span class="conf ${esc(datos.confianza)}">confianza ${esc(datos.confianza)}</span>` : '';
+  $('ia-ident').innerHTML = `<h4>${esc(datos.pieza_identificada)}${conf}</h4>
+    <div class="nota" style="margin:0 0 6px">Módulo: <b>${esc(mod?.nombre ?? 'Sin módulo específico')}</b>${mod && !mod.listo ? ' (aún no disponible: las medidas quedan como adicionales)' : ''}${foto.sinIA ? ' · <b>sin IA</b>' : ''}</div>
+    <div class="nota" style="margin:0">${esc(datos.observaciones)}</div>`;
+  $('ia-resultado').hidden = false;
+  dibujarMedidasIA();
+  $('ia-resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function dibujarMedidasIA() {
+  const cont = $('ia-medidas'); cont.innerHTML = '';
+  const opciones = [...MODULOS.pernos.campos.map(c => [c.id, '→ ' + c.etiqueta]), ['adicional', '→ Medida adicional']];
+  foto.medidas.forEach((x, i) => {
+    const d = document.createElement('div');
+    d.className = 'med-ia' + (x.usar ? '' : ' apagada');
+    d.innerHTML = `<div class="l1">
+        <input type="checkbox" ${x.usar ? 'checked' : ''} title="Usar esta medida">
+        <input class="nom" value="${esc(x.nombre)}" aria-label="Nombre de la medida">
+        <input class="val" type="number" step="any" placeholder="medir" value="${x.valor ?? ''}" aria-label="Valor">
+        <span class="nota" style="margin:0">${esc(x.unidad)}</span>
+        <button class="btn-x" title="Quitar">✕</button>
+      </div>
+      <div class="l2">
+        <select aria-label="Campo de destino">${opciones.map(([v, t]) => `<option value="${v}" ${v === x.campo ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>
+        <input class="ins" value="${esc(x.instrumento)}" placeholder="Instrumento" aria-label="Instrumento">
+      </div>
+      ${x.como ? `<div class="como">📏 ${esc(x.como)}</div>` : ''}`;
+    const [chk, nom, val] = d.querySelectorAll('.l1 input');
+    chk.addEventListener('change', () => { x.usar = chk.checked; d.classList.toggle('apagada', !x.usar); });
+    nom.addEventListener('input', () => { x.nombre = nom.value; });
+    val.addEventListener('input', () => { const f = parseFloat(val.value.replace(',', '.')); x.valor = Number.isFinite(f) ? f : null; });
+    d.querySelector('select').addEventListener('change', e => { x.campo = e.target.value; });
+    d.querySelector('.ins').addEventListener('input', e => { x.instrumento = e.target.value; });
+    d.querySelector('.btn-x').addEventListener('click', () => { foto.medidas.splice(i, 1); dibujarMedidasIA(); });
+    cont.appendChild(d);
+  });
+}
+
+function aplicarMedidasIA() {
+  const r = foto.resultado;
+  if (!r) return;
+  const modId = CATALOGO_IA[r.modulo_sugerido]?.listo ? r.modulo_sugerido : 'pernos';
+  const usadas = foto.medidas.filter(x => x.usar);
+  mostrarVista(modId);
+  cargarModulo(modId);
+  const m = MODULOS[modId];
+  if (r.tipo_pieza && m.selectores.find(s => s.id === 'tipo')?.opciones.some(o => o[0] === r.tipo_pieza)) ponerSelector('tipo', r.tipo_pieza);
+  const valores = {};
+  for (const x of usadas) {
+    const c = m.campos.find(c => c.id === x.campo);
+    if (c && Number.isFinite(x.valor)) valores[c.id] = x.valor;
+  }
+  if (Object.keys(valores).length) { ponerValores(valores); ponerSelector('norma', 'libre'); }
+  estado.extras = usadas.filter(x => x.campo === 'adicional').map(x => ({ nombre: x.nombre, valor: x.valor, unidad: x.unidad }));
+  dibujarExtras();
+  ultimaGeo = '';
+  actualizar(true);
+  const n = Object.keys(valores).length;
+  toast(`${n} medida${n === 1 ? '' : 's'} aplicada${n === 1 ? '' : 's'}` + (estado.extras.length ? ` · ${estado.extras.length} adicional(es)` : ''));
 }
 
 /* ---------- Numeración correlativa ---------- */
@@ -995,7 +1694,7 @@ function nuevaPieza() {
 }
 
 function nombreArchivo(ext) {
-  const t = $('caj-titulo').textContent.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const t = $('caj-titulo').textContent.normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[×x]/g, 'x').replace(/[^A-Za-z0-9.+-]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
   return `${numeroTexto()}_${t}.${ext}`;
 }
@@ -1040,6 +1739,15 @@ function exportarDXF() {
   const oy = mg + cajH + 15 + (altoUtil - (y1 - y0) * E) / 2 - y0 * E;
   m.dibujarDXF(v, sel, dxf, E, ox, oy);
 
+  // Medidas adicionales como notas (esquina inferior izquierda)
+  if (estado.extras.length) {
+    dxf.texto(mg + 4, mg + cajH - 2, 2.5, 'MEDIDAS ADICIONALES:');
+    estado.extras.slice(0, 8).forEach((x, i) => {
+      const val = Number.isFinite(x.valor) ? `${fmt(x.valor, 2)} ${x.unidad}` : '(por medir)';
+      dxf.texto(mg + 4, mg + cajH - 6 - i * 3.6, 2.2, `- ${x.nombre}: ${val}`.slice(0, 48));
+    });
+  }
+
   // Cajetín (esquina inferior derecha)
   const cx = W - mg - cajW, cy = mg;
   dxf.rect(cx, cy, W - mg, cy + cajH, 'CAJETIN');
@@ -1068,26 +1776,51 @@ $('caj-autor').value = almacen.leer('disenador3d.autor', '');
 $('caj-proyecto').value = almacen.leer('disenador3d.proyecto', '');
 $('caj-autor').addEventListener('input', e => almacen.guardar('disenador3d.autor', e.target.value));
 $('caj-proyecto').addEventListener('input', e => almacen.guardar('disenador3d.proyecto', e.target.value));
-
-$('trabajo').addEventListener('change', () => { llenarMateriales(); actualizar(false); });
-$('material').addEventListener('change', () => actualizar(false));
 for (const id of ['mat-nombre', 'mat-re', 'mat-rm']) $(id).addEventListener('input', () => actualizar(false));
 
 $('menu').addEventListener('click', e => {
-  const b = e.target.closest('button[data-modulo]');
-  if (b && !b.disabled) cargarModulo(b.dataset.modulo);
+  const b = e.target.closest('button[data-vista]');
+  if (b && !b.disabled) mostrarVista(b.dataset.vista);
 });
 $('btn-nueva').addEventListener('click', nuevaPieza);
 $('btn-dxf').addEventListener('click', () => { try { exportarDXF(); } catch (e) { console.error(e); toast('Error al exportar DXF.'); } });
 $('btn-stl').addEventListener('click', () => { try { exportarSTL(); } catch (e) { console.error(e); toast('Error al exportar STL.'); } });
 $('btn-encuadrar').addEventListener('click', encuadrarCamara);
-$('btn-girar').addEventListener('click', e => { visor.girar = !visor.girar; e.target.textContent = 'Girar: ' + (visor.girar ? 'sí' : 'no'); });
-$('btn-alambre').addEventListener('click', e => { visor.alambre = !visor.alambre; aplicarAlambre(); e.target.textContent = 'Alambre: ' + (visor.alambre ? 'sí' : 'no'); });
+$('btn-girar').addEventListener('click', e => { visor.girar = !visor.girar; e.currentTarget.classList.toggle('activo', visor.girar); });
+$('btn-alambre').addEventListener('click', e => { visor.alambre = !visor.alambre; aplicarAlambre(); e.currentTarget.classList.toggle('activo', visor.alambre); });
+
+// Foto + IA
+$('btn-subir').addEventListener('click', () => $('in-foto').click());
+$('btn-camara').addEventListener('click', abrirCamara);
+for (const id of ['in-foto', 'in-foto-cam']) $(id).addEventListener('change', e => { const f = e.target.files?.[0]; if (f) ponerFoto(f); e.target.value = ''; });
+$('cam-cancelar').addEventListener('click', cerrarCamara);
+$('dlg-camara').addEventListener('close', cerrarCamara);
+$('cam-capturar').addEventListener('click', async () => { await ponerFoto($('cam-video')); cerrarCamara(); });
+const zona = $('zona-foto');
+zona.addEventListener('click', () => { if (!foto.imagen) $('in-foto').click(); });
+zona.addEventListener('dragover', e => { e.preventDefault(); zona.classList.add('encima'); });
+zona.addEventListener('dragleave', () => zona.classList.remove('encima'));
+zona.addEventListener('drop', e => {
+  e.preventDefault(); zona.classList.remove('encima');
+  const f = [...(e.dataTransfer?.files ?? [])].find(f => f.type.startsWith('image/'));
+  if (f) ponerFoto(f);
+});
+$('btn-analizar').addEventListener('click', analizarIA);
+$('btn-plantilla').addEventListener('click', plantillaSinIA);
+$('btn-agregar-med').addEventListener('click', () => {
+  foto.medidas.push({ usar: true, campo: 'adicional', nombre: 'Nueva medida', simbolo: '', unidad: 'mm', valor: null, instrumento: '', como: '' });
+  dibujarMedidasIA();
+});
+$('btn-aplicar').addEventListener('click', aplicarMedidasIA);
+const claveGuardada = almacen.leer('disenador3d.claveIA', '');
+if (claveGuardada) { $('ia-clave').value = claveGuardada; $('ia-recordar').checked = true; }
+$('ia-recordar').addEventListener('change', e => { if (!e.target.checked) almacen.guardar('disenador3d.claveIA', ''); });
+dibujarDestinos();
 
 iniciarVisor();
 iniciarNumeracion();
-cargarModulo('pernos');
-window.__app = { estado, exportarDXF, exportarSTL }; // para pruebas
+mostrarVista('pernos');
+window.__app = { estado, foto, exportarDXF, exportarSTL, mostrarResultadoIA }; // para pruebas
 </script>
 
 <noscript>Esta herramienta necesita JavaScript.</noscript>
