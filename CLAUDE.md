@@ -98,6 +98,16 @@ y exportarlas a programas CAD.
    - Ideas siguientes: eje (flexión + torsión, ASME), cadenas y piñones de
      cadena, resortes, engranajes cónicos helicoidales.
 
+8. **Simulación de movimiento** (botón "▶ Simular" del visor, con velocidad):
+   `ANIMACIONES[id](grupo, v, sel)` reconoce las partes del grupo 3D y devuelve
+   `{ mover(t), info() }`; t = 0 es la posición de reposo. Relaciones reales
+   (tuerca: un paso por vuelta; cónicos z₁/z₂; sin fin z₁/z₂; poleas d₁/d₂ con
+   marcas en la correa; rodamiento: jaula ≈ ω(1 − Dw/dm)/2), velocidad visual.
+   Estructuras: persona de 1,75 m con herramientas que sube y recorre;
+   soldaduras: deformación exagerada bajo carga; DXF revolucionado: gira.
+   Lo que lleva `userData.noExportar` (persona, marcas) no va al STL, y el STL
+   se exporta siempre en reposo.
+
 ## Arquitectura
 
 - `index.html`: interfaz (menú lateral de tarjetas, panel con secciones

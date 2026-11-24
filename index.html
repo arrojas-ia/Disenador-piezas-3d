@@ -210,6 +210,14 @@
   .herr-visor button { background: rgba(255,255,255,.92); color: var(--texto); border-color: var(--borde); padding: 6px 10px; font-size: 13px; }
   .herr-visor button:hover { background: #fff; }
   .herr-visor button.activo { background: var(--acento); color: #fff; border-color: var(--acento); }
+  .herr-visor button.simular { background: #1e8a4c; color: #fff; border-color: #1e8a4c; font-weight: 600; }
+  .herr-visor button.simular:hover { background: #17703d; }
+  .herr-visor button.simular.activo { background: #c0392b; border-color: #c0392b; }
+  .vel-sim { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.92); border: 1px solid var(--borde);
+             border-radius: 8px; padding: 4px 10px; font-size: 13px; }
+  .vel-sim input { width: 90px; accent-color: var(--ok); }
+  #anim-info { position: absolute; top: 52px; left: 10px; max-width: min(520px, 60%); background: rgba(22,32,46,.88); color: #fff;
+               padding: 8px 12px; border-radius: 8px; font-size: 14px; line-height: 1.35; }
   #aviso-3d { position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
               text-align: center; padding: 20px; color: var(--mal); }
 
@@ -499,8 +507,11 @@
       <button id="btn-encuadrar">Encuadrar</button>
       <button id="btn-girar">Girar</button>
       <button id="btn-alambre">Alambre</button>
+      <button id="btn-simular" class="simular" title="Simular el movimiento de la pieza o del ensamblaje">▶ Simular</button>
+      <label class="vel-sim" title="Velocidad de la simulación">Velocidad <input type="range" id="vel-sim" min="0.1" max="3" step="0.1" value="1"></label>
     </div>
     <div id="aviso-3d"></div>
+    <div id="anim-info" hidden></div>
 
     <div id="cajetin" aria-label="Cajetín">
       <div class="titulo" id="caj-titulo">—</div>
@@ -4134,10 +4145,240 @@ const moduloImportar = {
 const MODULOS = { importar: moduloImportar, pernos: moduloPernos, soldadura: moduloSoldadura, escalera: moduloEscalera, pinon: moduloPinon,
   conico: moduloConico, sinfin: moduloSinfin, polea: moduloPolea, rodamiento: moduloRodamiento };
 
+
+/* =====================================================================
+   Simulación de movimiento de piezas y ensamblajes
+   Cada función recibe el grupo 3D ya construido y devuelve
+   { mover(t), info() }: t en segundos de simulación (t = 0 → posición de reposo).
+   Las relaciones de velocidad son las reales; la velocidad absoluta es visual.
+   ===================================================================== */
+const VUELTA = 2 * Math.PI;
+const vaivén = (t, periodo) => { const u = (t / periodo) % 2; return u < 1 ? u : 2 - u; };   // 0→1→0
+/** Mete los hijos indicados en un subgrupo (para girarlos alrededor de su propio eje). */
+function agrupar(padre, hijos, pos = [0, 0, 0]) {
+  const g = new THREE.Group();
+  g.position.set(...pos);
+  for (const h of hijos) { padre.remove(h); h.position.x -= pos[0]; h.position.y -= pos[1]; h.position.z -= pos[2]; g.add(h); }
+  padre.add(g);
+  return g;
+}
+const marca = (color = 0xd62828) => new THREE.MeshStandardMaterial({ color, metalness: 0.2, roughness: 0.5 });
+
+/** Persona esquemática de 1,75 m (no se exporta). Mira hacia +Z. */
+function persona() {
+  const p = new THREE.Group();
+  const ropa = marca(0xe8731a), piel = marca(0xf1c27d), pant = marca(0x24364f);
+  const pierna = () => { const g = new THREE.Group(); const m = new THREE.Mesh(new THREE.CylinderGeometry(70, 60, 850, 12), pant); m.position.y = -425; g.add(m); g.position.y = 880; return g; };
+  const pi = pierna(), pd = pierna(); pi.position.x = -95; pd.position.x = 95;
+  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(170, 380, 6, 12), ropa); torso.position.y = 1180;
+  const cabeza = new THREE.Mesh(new THREE.SphereGeometry(115, 18, 12), piel); cabeza.position.y = 1640;
+  const casco = new THREE.Mesh(new THREE.SphereGeometry(125, 18, 8, 0, VUELTA, 0, Math.PI / 2), marca(0xf2b705)); casco.position.y = 1665;
+  const caja = new THREE.Mesh(new THREE.BoxGeometry(260, 160, 120), marca(0x8a1c1c)); caja.position.set(260, 760, 60);   // caja de herramientas
+  p.add(pi, pd, torso, cabeza, casco, caja);
+  p.userData = { noExportar: true, piernas: [pi, pd] };
+  p.visible = false;
+  return p;
+}
+function caminar(p, pos, rumbo, fase) {
+  p.visible = true;
+  p.position.copy(pos);
+  p.rotation.y = rumbo;
+  const [a, b] = p.userData.piernas; const s = Math.sin(fase) * 0.45;
+  a.rotation.x = s; b.rotation.x = -s;
+}
+
+const ANIMACIONES = {
+  /* Tuerca que se enrosca: avanza un paso p por cada vuelta (hélice de la rosca) */
+  pernos(g, v, sel) {
+    const mod = moduloPernos, dsp = mod.disposicion(v, sel);
+    const [h0, h1] = g.children;
+    if (sel.tipo === 'tuerca') return { mover: (t) => { h0.rotation.y = -0.8 * t; }, info: () => 'Tuerca girando sobre su eje' };
+    if (sel.tipo === 'perno') {
+      const recorrido = Math.min(0.5 * v.L, 12 * v.p);
+      return { mover: (t) => { const s = vaivén(t, 6) * recorrido; h0.position.y = -s; h0.rotation.y = -s / v.p * VUELTA; },
+        info: () => `Atornillado: avanza ${fmt(v.p, 2)} mm por vuelta` };
+    }
+    const y0 = dsp.yIniRosca - v.m, y1 = Math.max(-v.L + 0.05 * v.L, dsp.yFinRosca + 0.02 * v.L), yReposo = h1.position.y;
+    return {
+      mover: (t) => {
+        if (t === 0) { h1.position.y = yReposo; h1.rotation.y = 0; return; }
+        const y = y0 + (y1 - y0) * vaivén(t, 8); h1.position.y = y; h1.rotation.y = -(y0 - y) / v.p * VUELTA;
+      },
+      info: () => `La tuerca avanza ${fmt(v.p, 2)} mm por vuelta (${fmt((y0 - y1) / v.p, 1)} vueltas en todo el recorrido)`,
+    };
+  },
+
+  /* Piñón girando a su velocidad (escalada) */
+  pinon(g, v, sel) {
+    return { mover: (t) => { g.rotation.y = -0.6 * t; }, info: () => `Piñón a ${fmt(estado.valores.rpm, 0)} rpm (mostrado lento)` };
+  },
+
+  /* Par cónico: ω₂ = ω₁ · z₁ / z₂, sentidos opuestos en el punto de contacto */
+  conico(g, v, sel) {
+    const i = v.z2 / v.z1;
+    const rueda = sel.tipo !== 'pinon' ? g.children[0] : null;
+    const piv = sel.tipo !== 'rueda' ? g.children[sel.tipo === 'par' ? 1 : 0] : null;
+    const pin = piv?.children[0];
+    return {
+      mover: (t) => { const th = 0.8 * t; if (pin) pin.rotation.y = th; if (rueda) rueda.rotation.y = -th / i; },
+      info: () => `Piñón a ${fmt(estado.valores.rpm, 0)} rpm → rueda a ${fmt(estado.valores.rpm / i, 0)} rpm (i = ${fmt(i, 2)})`,
+    };
+  },
+
+  /* Sin fin: una vuelta del tornillo hace avanzar z₁ dientes de la corona */
+  sinfin(g, v, sel) {
+    const z1 = Number(sel.z1), i = v.z2 / z1;
+    let corona = null, tornillo = null;
+    for (const h of g.children) (h.isMesh ? (corona = h) : (tornillo = h));
+    const giro = tornillo ? agrupar(tornillo, [...tornillo.children]) : null;
+    return {
+      mover: (t) => { const th = 2.5 * t; if (giro) giro.rotation.y = th; if (corona) corona.rotation.y = -th / i; },
+      info: () => `Tornillo ${fmt(estado.valores.rpm, 0)} rpm → corona ${fmt(estado.valores.rpm / i, 1)} rpm (i = ${fmt(i, 1)} : 1)`,
+    };
+  },
+
+  /* Poleas: n₂ = n₁ · d₁ / d₂; las marcas amarillas avanzan con la correa */
+  polea(g, v, sel) {
+    const geo = moduloPolea.geo(v, sel);
+    const correas = [], p1 = [], p2 = [];
+    for (const h of [...g.children]) {
+      if (h.geometry?.type === 'BufferGeometry') { correas.push(h); continue; }
+      (Math.abs(h.position.x) < Math.abs(h.position.x - v.C) ? p1 : p2).push(h);
+    }
+    const g1 = agrupar(g, p1, [0, 0, 0]);
+    const g2 = sel.pieza === 'transmision' ? agrupar(g, p2, [v.C, 0, 0]) : null;
+    // recorrido de la correa (mismo que en construir3D) y marcas
+    const marcas = [];
+    let camino = [], largos = [0], total = 0;
+    if (g2) {
+      const r1 = geo.d1 / 2, r2 = geo.d2 / 2, phi = Math.asin(Math.max(-0.999, Math.min(0.999, (r2 - r1) / v.C))), N = 48;
+      for (let k = 0; k <= N; k++) { const a = Math.PI / 2 + phi - (Math.PI + 2 * phi) * k / N; camino.push([v.C + r2 * Math.cos(a), r2 * Math.sin(a)]); }
+      for (let k = 0; k <= N; k++) { const a = -Math.PI / 2 - phi - (Math.PI - 2 * phi) * k / N; camino.push([r1 * Math.cos(a), r1 * Math.sin(a)]); }
+      for (let k = 1; k <= camino.length; k++) { const a = camino[k - 1], b = camino[k % camino.length]; total += Math.hypot(b[0] - a[0], b[1] - a[1]); largos.push(total); }
+      const alto = esV(sel) ? (PERFILES_V[sel.perfil]?.alto ?? 10) * 0.3 : esS(sel) ? (PERFILES_HTD[sel.perfil]?.alto ?? 5) : v.tb;
+      const ancho = esV(sel) ? moduloPolea.anchoPolea(v, sel) : v.bw;
+      for (let k = 0; k < 8; k++) { const m = new THREE.Mesh(new THREE.BoxGeometry(Math.max(6, geo.d1 * 0.05), alto + 2, ancho * 0.9), marca(0xf2b705)); m.userData.noExportar = true; m.visible = false; g.add(m); marcas.push(m); }
+      marcas.alto = alto;
+    }
+    const enCamino = (s) => {
+      s = ((s % total) + total) % total;
+      let k = largos.findIndex(L => L > s); if (k < 1) k = 1;
+      const a = camino[(k - 1) % camino.length], b = camino[k % camino.length], u = (s - largos[k - 1]) / ((largos[k] - largos[k - 1]) || 1);
+      const tx = b[0] - a[0], ty = b[1] - a[1], l = Math.hypot(tx, ty) || 1;
+      return { x: a[0] + tx * u - ty / l * marcas.alto / 2, y: a[1] + ty * u + tx / l * marcas.alto / 2, ang: Math.atan2(ty, tx) };
+    };
+    const i = geo.d2 / geo.d1;
+    return {
+      mover: (t) => {
+        const th = -1.2 * t;                         // la polea motriz gira en sentido horario
+        g1.rotation.z = th;
+        if (g2) g2.rotation.z = th / i;
+        marcas.forEach((m, k) => {
+          if (t === 0) { m.visible = false; return; }
+          const q = enCamino(-th * geo.d1 / 2 + k * total / marcas.length);
+          m.visible = true; m.position.set(q.x, q.y, 0); m.rotation.z = q.ang;
+        });
+      },
+      info: () => g2 ? `Motriz ${fmt(estado.valores.rpm, 0)} rpm → conducida ${fmt(estado.valores.rpm / i, 0)} rpm · correa a ${fmt(Math.PI * geo.d1 * estado.valores.rpm / 60000, 1)} m/s`
+        : `Polea a ${fmt(estado.valores.rpm, 0)} rpm`,
+    };
+  },
+
+  /* Rodamiento: gira el aro interior; los elementos rodantes orbitan con la jaula a ω·(1 − Dw/dm)/2 */
+  rodamiento(g, v, sel) {
+    const aros = g.children.filter(h => h.isMesh && h.geometry.type === 'LatheGeometry');
+    const elementos = g.children.filter(h => h.isGroup);
+    elementos.forEach(e => { e.userData.a0 = e.rotation.y; });
+    const axial = sel.tipo.startsWith('axial');
+    const interior = axial ? aros[0] : aros[1];
+    if (interior) {   // marca roja en la cara del aro que gira, para que se vea el giro
+      const m = new THREE.Mesh(new THREE.BoxGeometry(Math.max(1.5, 0.08 * (v.D - v.d)), 0.6, Math.max(1, 0.03 * v.d)), marca());
+      m.position.set(axial ? (v.d / 2 + v.D / 2) / 2 : v.d / 2 + 0.06 * (v.D - v.d), v.B / 2 + 0.3, 0);
+      interior.add(m);
+    }
+    const dm = (v.d + v.D) / 2, Dw = 0.25 * (v.D - v.d);
+    const kj = axial ? 0.5 : 0.5 * (1 - Dw / dm);
+    return {
+      mover: (t) => { const th = 1.5 * t; if (interior) interior.rotation.y = th; elementos.forEach(e => { e.rotation.y = e.userData.a0 + kj * th; }); },
+      info: () => `${axial ? 'Arandela de eje' : 'Aro interior'} a ${fmt(estado.valores.rpm, 0)} rpm · jaula a ${fmt(kj * estado.valores.rpm, 0)} rpm (aro exterior fijo)`,
+    };
+  },
+
+  /* Persona de 90 kg con herramientas subiendo y recorriendo la estructura */
+  escalera(g, v, sel) {
+    const geo = moduloEscalera.geometria(v, sel), t0 = sel.tipo;
+    const p = persona(); g.add(p);
+    const hs = geo.sec.alto;
+    let tramo;   // s ∈ [0,1] → { pos, rumbo }
+    if (conEscalera(t0)) {
+      const n = geo.n, piso = (x) => { const k = Math.round(x / v.g); return k < 1 ? 0 : k > n ? v.H + 6 : k * geo.c + hs / 2 + 30; };
+      const xFin = conPlataforma(t0) ? geo.x1 - 350 : geo.Lh;
+      const L = 600 + xFin;
+      tramo = (s) => { const x = -600 + s * L; return { pos: V3(x, x < 0 ? 0 : x >= geo.Lh - v.g / 2 ? v.H + 6 : piso(x), 0), rumbo: Math.PI / 2 }; };
+    } else if (t0 === 'plataforma') {
+      tramo = (s) => ({ pos: V3(300 + s * Math.max(0, v.Lp - 600), v.H + 6, 0), rumbo: Math.PI / 2 });
+    } else if (t0 === 'caracol') {
+      const rl = geo.rc + 2 / 3 * geo.Lv, n1 = geo.n + 1, amax = n1 * geo.dth;
+      tramo = (s) => { const a = s * amax, k = Math.min(n1, Math.round(a / geo.dth)); return { pos: V3(rl * Math.cos(a), k * geo.c + 6, -rl * Math.sin(a)), rumbo: a + Math.PI }; };
+    } else {
+      const r = 0.55 * geo.R;
+      tramo = (s) => { const a = s * VUELTA; return { pos: V3(r * Math.cos(a), v.H + 6, r * Math.sin(a)), rumbo: -a }; };
+    }
+    const periodo = t0 === 'circular' ? 10 : 12;
+    let antes = null;
+    return {
+      mover: (t) => {
+        if (t === 0) { p.visible = false; antes = null; return; }
+        const s = t0 === 'circular' ? (t / periodo) % 1 : vaivén(t, periodo);
+        const { pos, rumbo } = tramo(s);
+        const vuelta = antes !== null && s < antes && t0 !== 'circular';
+        caminar(p, pos, vuelta ? rumbo + Math.PI : rumbo, t * 7);
+        antes = s;
+      },
+      info: () => `Persona de ${fmt(estado.valores.mp, 0)} kg + ${fmt(estado.valores.mh, 0)} kg de herramientas recorriendo la estructura`,
+    };
+  },
+
+  /* Soldadura: se aplica la carga y la unión se deforma (exagerado para que se vea) */
+  soldadura(g, v, sel) {
+    const esCordon = (h) => h.material?.color?.getHex() === 0xb8642a;
+    const esFlecha = (h) => ['ConeGeometry', 'CylinderGeometry'].includes(h.geometry?.type) && !esCordon(h);
+    const u = sel.union;
+    if (u === 'rect' || u === 'tubo' || u === 'mensula') {
+      const mov = g.children.filter(h => esFlecha(h) || (u === 'mensula'
+        ? h.geometry?.type === 'BoxGeometry' && h.position.x > 0
+        : h.geometry?.type === 'ExtrudeGeometry' && !esCordon(h)));
+      const piv = agrupar(g, mov, u === 'mensula' ? [0, v.d / 2, v.b / 2] : [0, 0, 0]);
+      return {
+        mover: (t) => { const a = 0.035 * (0.5 - 0.5 * Math.cos(1.6 * t)); if (u === 'mensula') piv.rotation.x = a; else piv.rotation.z = -a; },
+        info: () => `Aplicando F = ${fmt(estado.valores.F, 1)} kN (deformación muy exagerada)`,
+      };
+    }
+    const lado = (s) => g.children.filter(h => !esCordon(h) && Math.sign(h.position.x) === s);
+    const der = agrupar(g, lado(1)), izq = agrupar(g, lado(-1));
+    return {
+      mover: (t) => { const d = 0.01 * (u === 'tope' ? 400 : v.L + 200) * (0.5 - 0.5 * Math.cos(1.6 * t)); der.position.x = d; izq.position.x = -d; },
+      info: () => `Tracción F = ${fmt(estado.valores.F, 1)} kN (alargamiento muy exagerado)`,
+    };
+  },
+
+  /* Pieza de revolución importada: gira sobre su eje como en el torno */
+  importar(g, v, sel) {
+    if (sel.modo !== 'revolucion') return null;
+    const giros = g.children.map(pieza => agrupar(pieza, [...pieza.children]));
+    return { mover: (t) => { for (const s of giros) s.rotation.y = 1.2 * t; }, info: () => 'Pieza girando sobre su eje (como en el torno)' };
+  },
+};
+
+function prepararAnimacion(id, grupo, v, sel) {
+  try { return ANIMACIONES[id]?.(grupo, v, sel) ?? null; }
+  catch (e) { console.error(e); return null; }
+}
+
 /* =====================================================================
    Visor 3D
    ===================================================================== */
-const visor = { listo: false };
+const visor = { listo: false, animando: false, anim: null, t: 0, velocidad: 1 };
 function iniciarVisor() {
   const cont = $('visor');
   try {
@@ -4174,8 +4415,15 @@ function iniciarVisor() {
     new ResizeObserver(redimensionar).observe(cont);
     redimensionar();
 
+    const reloj = new THREE.Clock();
     renderer.setAnimationLoop(() => {
+      const dt = Math.min(0.1, reloj.getDelta());
       if (visor.girar) pieza.rotation.y += 0.006;
+      if (visor.animando && visor.anim) {
+        visor.t += dt * visor.velocidad;
+        visor.anim.mover(visor.t);
+        const inf = $('anim-info'); const txt = visor.anim.info(); if (inf.textContent !== txt) inf.textContent = txt;
+      }
       controles.update();
       renderer.render(escena, camara);
     });
@@ -4498,7 +4746,13 @@ function actualizar(encuadrar) {
   const clave = JSON.stringify([m.campos.map(c => v[c.id]), estado.sel, m.claveExtra?.() ?? 0]);
   if (clave !== ultimaGeo) {
     ultimaGeo = clave;
-    try { mostrarPieza(m.construir3D(v, estado.sel), encuadrar); }
+    try {
+      const g3 = m.construir3D(v, estado.sel);
+      visor.anim = prepararAnimacion(m.id, g3, v, estado.sel);
+      if (visor.animando) visor.anim?.mover(visor.t);
+      mostrarPieza(g3, encuadrar);
+      actualizarBotonSimular();
+    }
     catch (e) { console.error(e); toast('No se pudo generar la geometría con estas medidas.'); }
   }
 
@@ -4557,9 +4811,14 @@ function nombreArchivo(ext) {
 function exportarSTL() {
   if (!validar()) return toast('Corrija las medidas antes de exportar.');
   if (!visor.listo) return toast('La vista 3D no está disponible.');
+  visor.anim?.mover(0);                                   // posición de reposo
   const copia = visor.pieza.clone(true);
   copia.rotation.set(0, 0, 0);
+  const fuera = [];
+  copia.traverse(o => { if (o.userData?.noExportar) fuera.push(o); });
+  for (const o of fuera) o.parent?.remove(o);
   copia.updateMatrixWorld(true);
+  if (visor.animando) visor.anim?.mover(visor.t);
   const datos = new STLExporter().parse(copia, { binary: true });
   descargar(nombreArchivo('stl'), new Blob([datos], { type: 'application/sla' }));
   toast('STL exportado (unidades: mm)');
@@ -4651,6 +4910,24 @@ window.addEventListener('drop', (e) => {
 $('btn-dxf').addEventListener('click', () => { try { exportarDXF(); } catch (e) { console.error(e); toast('Error al exportar DXF.'); } });
 $('btn-stl').addEventListener('click', () => { try { exportarSTL(); } catch (e) { console.error(e); toast('Error al exportar STL.'); } });
 $('btn-encuadrar').addEventListener('click', encuadrarCamara);
+function actualizarBotonSimular() {
+  const b = $('btn-simular');
+  b.classList.toggle('activo', !!visor.animando);
+  b.textContent = visor.animando ? '■ Detener' : '▶ Simular';
+  const inf = $('anim-info');
+  inf.hidden = !visor.animando;
+  if (visor.animando) inf.textContent = visor.anim ? visor.anim.info() : 'Esta pieza no tiene movimiento propio: se gira la vista.';
+  if (visor.animando && !visor.anim) visor.girar = true;
+}
+$('btn-simular').addEventListener('click', () => {
+  visor.animando = !visor.animando;
+  if (!visor.animando) {
+    visor.anim?.mover(0); visor.t = 0;
+    if (!$('btn-girar').classList.contains('activo')) { visor.girar = false; if (visor.pieza) visor.pieza.rotation.y = 0; }
+  }
+  actualizarBotonSimular();
+});
+$('vel-sim').addEventListener('input', (e) => { visor.velocidad = Number(e.target.value) || 1; });
 $('btn-girar').addEventListener('click', e => { visor.girar = !visor.girar; e.currentTarget.classList.toggle('activo', visor.girar); });
 $('btn-alambre').addEventListener('click', e => { visor.alambre = !visor.alambre; aplicarAlambre(); e.currentTarget.classList.toggle('activo', visor.alambre); });
 
@@ -4663,7 +4940,7 @@ $('btn-extra').addEventListener('click', () => {
 iniciarVisor();
 iniciarNumeracion();
 mostrarVista('pernos');
-window.__app = { estado, exportarDXF, exportarSTL, mostrarVista }; // para pruebas
+window.__app = { estado, exportarDXF, exportarSTL, mostrarVista, visor }; // para pruebas
 </script>
 
 <noscript>Esta herramienta necesita JavaScript.</noscript>
