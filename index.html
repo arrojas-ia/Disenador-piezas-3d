@@ -195,6 +195,13 @@
   .btn-x { background: none; border: 0; color: var(--suave); padding: 4px; font-size: 16px; justify-content: center; }
   .btn-x:hover { background: #fbe7e4; color: var(--mal); }
 
+  /* ---------- Importar DXF ---------- */
+  .zona-dxf { display: flex; gap: 12px; align-items: center; border: 2px dashed #a9b8cc; border-radius: 12px; background: #f7f9fc;
+              padding: 12px 14px; margin-bottom: 6px; transition: border-color .15s, background .15s; }
+  .zona-dxf.encima { border-color: var(--acento); background: var(--acento-claro); }
+  .zona-dxf .ico-grande { width: 40px; height: 40px; color: var(--acento); flex: none; }
+  .zona-dxf button { margin-top: 4px; }
+
   /* ---------- Visor ---------- */
   #visor-cont { position: relative; min-width: 0; min-height: 0; background: #e8ecf2; }
   #visor { position: absolute; inset: 0; }
@@ -343,6 +350,11 @@
     <symbol id="i-p-trap" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 9h22l-5 14H10z"/></symbol>
     <symbol id="i-p-plana" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="13" width="26" height="6"/></symbol>
     <symbol id="i-p-sinc" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 12h26v6h-3v4h-4v-4h-4v4h-4v-4h-4v4H6v-4H3z"/></symbol>
+    <!-- importar DXF -->
+    <symbol id="i-importar" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M7 3h12l6 6v20H7z"/><path d="M19 3v6h6"/><path d="M16 13v10M12 19l4 4 4-4"/></symbol>
+    <symbol id="i-extruir" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 22h14v6H4z"/><path d="M4 22l8-8h14l-8 8M26 14v6l-8 8" /><circle cx="15" cy="18" r="1.6" fill="currentColor"/></symbol>
+    <symbol id="i-revolucion" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M16 2v28" stroke-dasharray="3 2" stroke-width="1.3"/><path d="M16 6h6v6h4v10h-6v4h-4"/><path d="M6 14c-3 1-3 5 0 6" /><path d="M5 18l1 2 2-1" stroke-width="1.4"/></symbol>
+    <symbol id="i-barras" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 28V8h24v20M4 8l8 8M28 8l-8 8M4 8l12-5 12 5"/><circle cx="4" cy="8" r="1.8" fill="currentColor"/><circle cx="28" cy="8" r="1.8" fill="currentColor"/></symbol>
   </defs>
 </svg>
 
@@ -359,6 +371,12 @@
 <main>
   <!-- Menú de módulos -->
   <nav id="menu" aria-label="Módulos">
+    <h2>Desde AutoCAD</h2>
+    <button class="tarjeta-mod" data-vista="importar">
+      <span class="t-ico"><svg><use href="#i-importar"/></svg></span>
+      <span class="t-txt"><b>Importar plano DXF</b><span>Extruir, revolucionar o barras con perfil</span></span>
+      <span class="insignia ia">Nuevo</span>
+    </button>
     <h2>Uniones</h2>
     <button class="tarjeta-mod activo" data-vista="pernos">
       <span class="t-ico"><svg><use href="#i-perno"/></svg></span>
@@ -419,6 +437,7 @@
       <details class="sec" open>
         <summary><svg class="ico"><use href="#i-regla"/></svg>Pieza y medidas</summary>
         <div class="cuerpo">
+          <div id="modulo-extra"></div>
           <div id="selectores"></div>
           <div class="etq-grupo">Medidas</div>
           <div id="campos"></div>
@@ -3370,7 +3389,677 @@ function barrido(camino, seccion, offZ = 0) {
   return g;
 }
 
-const MODULOS = { pernos: moduloPernos, soldadura: moduloSoldadura, escalera: moduloEscalera, pinon: moduloPinon,
+/* =====================================================================
+   Lector de DXF (ASCII) — LINE, LWPOLYLINE, POLYLINE, CIRCLE, ARC,
+   ELLIPSE, SPLINE e INSERT (bloques), con $INSUNITS.
+   ===================================================================== */
+function leerDXF(texto) {
+  if (/^AutoCAD Binary DXF/.test(texto)) throw new Error('El DXF está en formato binario. Guárdelo como DXF ASCII (de texto).');
+  if (/^AC10\d\d/.test(texto)) throw new Error('Es un archivo DWG. Conviértalo a DXF (AutoCAD: Guardar como → DXF, o ODA File Converter) y ábralo de nuevo.');
+  const l = texto.split(/\r?\n/);
+  const pares = [];
+  for (let i = 0; i + 1 < l.length; i += 2) {
+    const c = parseInt(l[i].trim(), 10);
+    if (Number.isFinite(c)) pares.push([c, l[i + 1].trim()]);
+  }
+  if (!pares.some(([c, v]) => c === 0 && v === 'SECTION')) throw new Error('El archivo no parece un DXF válido.');
+  let i = 0, seccion = null, bloque = null;
+  const header = {}, bloques = {}, entidades = [];
+  const leerEntidad = () => {
+    const tipo = pares[i][1], datos = [];
+    i++;
+    while (i < pares.length && pares[i][0] !== 0) { datos.push(pares[i]); i++; }
+    return { tipo, datos };
+  };
+  while (i < pares.length) {
+    const [c, v] = pares[i];
+    if (c === 0 && v === 'SECTION') { seccion = pares[i + 1]?.[1]; i += 2; continue; }
+    if (c === 0 && v === 'ENDSEC') { seccion = null; i++; continue; }
+    if (c === 0 && v === 'EOF') break;
+    if (seccion === 'HEADER') {
+      if (c === 9 && v === '$INSUNITS') { header.insunits = parseInt(pares[i + 1]?.[1], 10); i += 2; continue; }
+      i++; continue;
+    }
+    if ((seccion === 'BLOCKS' || seccion === 'ENTITIES') && c === 0) {
+      const e = leerEntidad();
+      if (e.tipo === 'BLOCK') { const g = codigosDXF(e.datos); bloque = { nombre: g.s(2), base: [g.n(10), g.n(20), g.n(30)], ents: [] }; bloques[bloque.nombre] = bloque; continue; }
+      if (e.tipo === 'ENDBLK') { bloque = null; continue; }
+      if (e.tipo === 'POLYLINE') {
+        e.vertices = [];
+        while (i < pares.length && pares[i][0] === 0 && pares[i][1] === 'VERTEX') e.vertices.push(leerEntidad());
+        if (i < pares.length && pares[i][1] === 'SEQEND') leerEntidad();
+      }
+      (bloque ? bloque.ents : entidades).push(e);
+      continue;
+    }
+    i++;
+  }
+  return { header, bloques, entidades };
+}
+
+function codigosDXF(datos) {
+  const primero = (c) => datos.find(p => p[0] === c)?.[1];
+  return {
+    s: (c, d = '') => primero(c) ?? d,
+    n: (c, d = 0) => { const x = parseFloat(primero(c)); return Number.isFinite(x) ? x : d; },
+    todos: (c) => datos.filter(p => p[0] === c).map(p => parseFloat(p[1])),
+  };
+}
+
+/** Puntos de un arco definido por bulge entre p1 y p2 (sin incluir p2). */
+function arcoBulge(p1, p2, b) {
+  if (Math.abs(b) < 1e-9) return [p1];
+  const dx = p2[0] - p1[0], dy = p2[1] - p1[1];
+  const s = (1 - b * b) / (4 * b);
+  const cx = (p1[0] + p2[0]) / 2 - s * dy, cy = (p1[1] + p2[1]) / 2 + s * dx;
+  const r = Math.hypot(p1[0] - cx, p1[1] - cy);
+  const a1 = Math.atan2(p1[1] - cy, p1[0] - cx), th = 4 * Math.atan(b);
+  const n = Math.max(2, Math.ceil(Math.abs(th) / (6 * RAD)));
+  const out = [];
+  for (let k = 0; k < n; k++) { const a = a1 + th * k / n; out.push([cx + r * Math.cos(a), cy + r * Math.sin(a), p1[2] ?? 0]); }
+  return out;
+}
+
+/** Convierte las entidades en polilíneas {capa, pts:[[x,y,z]], cerrada, circulo?} con bloques expandidos. */
+function primitivasDXF(dxf) {
+  const salida = [];
+  const arcoPts = (cx, cy, z, r, a0, a1) => {
+    let sw = a1 - a0; while (sw <= 0) sw += 360;
+    const n = Math.max(4, Math.ceil(sw / 6));
+    return Array.from({ length: n + 1 }, (_, k) => { const a = (a0 + sw * k / n) * RAD; return [cx + r * Math.cos(a), cy + r * Math.sin(a), z]; });
+  };
+  const recorrer = (ents, T, capaPadre, nivel) => {
+    if (nivel > 6) return;
+    const tr = ([x, y, z = 0]) => [T.a * x + T.b * y + T.e, T.c * x + T.d * y + T.f, z + T.z];
+    for (const e of ents) {
+      const g = codigosDXF(e.datos);
+      let capa = g.s(8, '0');
+      if (capa === '0' && capaPadre) capa = capaPadre;
+      const espejo = g.n(230, 1) < 0 ? -1 : 1;     // dirección de extrusión (0,0,-1): espejo en X
+      const P = (x, y, z = 0) => tr([espejo * x, y, z]);
+      const add = (pts, cerrada, extra = {}) => { if (pts.length >= 2) salida.push({ capa, pts, cerrada, ...extra }); };
+      switch (e.tipo) {
+        case 'LINE': add([P(g.n(10), g.n(20), g.n(30)), P(g.n(11), g.n(21), g.n(31))], false, { linea: true }); break;
+        case 'CIRCLE': {
+          const pts = arcoPts(g.n(10), g.n(20), g.n(30), g.n(40), 0, 360); pts.pop();
+          add(pts.map(p => P(...p)), true, { circulo: true }); break;
+        }
+        case 'ARC': {
+          let a0 = g.n(50), a1 = g.n(51);
+          if (espejo < 0) [a0, a1] = [180 - a1, 180 - a0];
+          add(arcoPts(espejo * g.n(10), g.n(20), g.n(30), g.n(40), a0, a1).map(p => tr(p)), false); break;
+        }
+        case 'LWPOLYLINE': {
+          const vs = []; const z = g.n(38);
+          for (const [c, v] of e.datos) {
+            if (c === 10) vs.push({ x: parseFloat(v), y: 0, b: 0 });
+            else if (c === 20 && vs.length) vs[vs.length - 1].y = parseFloat(v);
+            else if (c === 42 && vs.length) vs[vs.length - 1].b = parseFloat(v);
+          }
+          const cerrada = (g.n(70) & 1) === 1;
+          const pts = [];
+          for (let k = 0; k < vs.length; k++) {
+            const a = vs[k], b = vs[(k + 1) % vs.length];
+            if (k === vs.length - 1 && !cerrada) { pts.push([a.x, a.y, z]); break; }
+            pts.push(...arcoBulge([a.x, a.y, z], [b.x, b.y, z], a.b));
+          }
+          add(pts.map(p => P(...p)), cerrada); break;
+        }
+        case 'POLYLINE': {
+          const cerrada = (g.n(70) & 1) === 1;
+          const vs = (e.vertices ?? []).map(vx => { const h = codigosDXF(vx.datos); return { x: h.n(10), y: h.n(20), z: h.n(30), b: h.n(42) }; });
+          const pts = [];
+          for (let k = 0; k < vs.length; k++) {
+            const a = vs[k], b = vs[(k + 1) % vs.length];
+            if (k === vs.length - 1 && !cerrada) { pts.push([a.x, a.y, a.z]); break; }
+            pts.push(...arcoBulge([a.x, a.y, a.z], [b.x, b.y, b.z], a.b));
+          }
+          add(pts.map(p => P(...p)), cerrada); break;
+        }
+        case 'ELLIPSE': {
+          const cx = g.n(10), cy = g.n(20), mx = g.n(11), my = g.n(21), k = g.n(40, 1);
+          let t0 = g.n(41, 0), t1 = g.n(42, 2 * Math.PI); if (t1 <= t0) t1 += 2 * Math.PI;
+          const ang = Math.atan2(my, mx), A = Math.hypot(mx, my), Bm = A * k, n = Math.max(8, Math.ceil((t1 - t0) / (6 * RAD)));
+          const pts = Array.from({ length: n + 1 }, (_, j) => { const t = t0 + (t1 - t0) * j / n, x = A * Math.cos(t), y = Bm * Math.sin(t);
+            return P(cx + x * Math.cos(ang) - y * Math.sin(ang), cy + x * Math.sin(ang) + y * Math.cos(ang), g.n(30)); });
+          const completa = Math.abs(t1 - t0 - 2 * Math.PI) < 1e-6;
+          if (completa) pts.pop();
+          add(pts, completa); break;
+        }
+        case 'SPLINE': {   // aproximación por puntos de ajuste (o de control si no hay)
+          const fx = g.todos(11), fy = g.todos(21), cx = g.todos(10), cy = g.todos(20);
+          const [xs, ys] = fx.length >= 2 ? [fx, fy] : [cx, cy];
+          add(xs.map((x, j) => P(x, ys[j] ?? 0, 0)), (g.n(70) & 1) === 1); break;
+        }
+        case 'INSERT': {
+          const b = dxf.bloques[g.s(2)];
+          if (!b) break;
+          const sx = g.n(41, 1), sy = g.n(42, 1), rot = g.n(50) * RAD, [bx, by, bz] = b.base;
+          const ix = espejo * g.n(10), iy = g.n(20);
+          const c = Math.cos(rot), s = Math.sin(rot);
+          // local → (restar base, escalar, rotar, trasladar) → transformación del padre
+          const L = { a: c * sx, b: -s * sy, c: s * sx, d: c * sy };
+          const ex = ix - (L.a * bx + L.b * by), fy = iy - (L.c * bx + L.d * by);
+          const N = { a: T.a * L.a + T.b * L.c, b: T.a * L.b + T.b * L.d, c: T.c * L.a + T.d * L.c, d: T.c * L.b + T.d * L.d,
+            e: T.a * ex + T.b * fy + T.e, f: T.c * ex + T.d * fy + T.f, z: T.z + g.n(30) - bz };
+          if (espejo < 0) { N.a *= -1; N.c *= -1; }
+          recorrer(b.ents, N, capa, nivel + 1);
+          break;
+        }
+      }
+    }
+  };
+  recorrer(dxf.entidades, { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0, z: 0 }, null, 0);
+  return salida;
+}
+
+/** Une tramos abiertos por sus extremos y devuelve {cerrados, abiertos} (listas de puntos 2D). */
+function encadenar(prims, tol) {
+  const cerrados = [], abiertos = [];
+  const cerca = (p, q) => Math.abs(p[0] - q[0]) <= tol && Math.abs(p[1] - q[1]) <= tol;
+  const tramos = [];
+  for (const p of prims) {
+    const pts = p.pts.map(q => [q[0], q[1]]);
+    if (p.cerrada) { if (pts.length >= 3) cerrados.push(pts); }
+    else tramos.push(pts);
+  }
+  const usado = new Array(tramos.length).fill(false);
+  for (let k = 0; k < tramos.length; k++) {
+    if (usado[k]) continue;
+    usado[k] = true;
+    let cad = tramos[k].slice();
+    let crece = true;
+    while (crece && !cerca(cad[0], cad[cad.length - 1])) {
+      crece = false;
+      for (let j = 0; j < tramos.length; j++) {
+        if (usado[j]) continue;
+        const t = tramos[j], fin = cad[cad.length - 1], ini = cad[0];
+        if (cerca(fin, t[0])) cad = cad.concat(t.slice(1));
+        else if (cerca(fin, t[t.length - 1])) cad = cad.concat(t.slice(0, -1).reverse());
+        else if (cerca(ini, t[t.length - 1])) cad = t.slice(0, -1).concat(cad);
+        else if (cerca(ini, t[0])) cad = t.slice(1).reverse().concat(cad);
+        else continue;
+        usado[j] = true; crece = true;
+      }
+    }
+    if (cad.length >= 4 && cerca(cad[0], cad[cad.length - 1])) { cad.pop(); cerrados.push(cad); }
+    else abiertos.push(cad);
+  }
+  return { cerrados, abiertos };
+}
+
+/* Propiedades de un polígono (fórmulas de Green / "shoelace"): área con signo, centroide e inercias respecto del origen */
+function propsPoligono(pts) {
+  let A = 0, Cx = 0, Cy = 0, Ix = 0, Iy = 0, per = 0;
+  for (let k = 0; k < pts.length; k++) {
+    const [x0, y0] = pts[k], [x1, y1] = pts[(k + 1) % pts.length];
+    const cr = x0 * y1 - x1 * y0;
+    A += cr; Cx += (x0 + x1) * cr; Cy += (y0 + y1) * cr;
+    Ix += (y0 * y0 + y0 * y1 + y1 * y1) * cr; Iy += (x0 * x0 + x0 * x1 + x1 * x1) * cr;
+    per += Math.hypot(x1 - x0, y1 - y0);
+  }
+  A /= 2;
+  return { A, Cx: A ? Cx / (6 * A) : 0, Cy: A ? Cy / (6 * A) : 0, Ix: Ix / 12, Iy: Iy / 12, per };
+}
+function dentro(p, poli) {
+  let c = false;
+  for (let i = 0, j = poli.length - 1; i < poli.length; j = i++) {
+    const [xi, yi] = poli[i], [xj, yj] = poli[j];
+    if ((yi > p[1]) !== (yj > p[1]) && p[0] < (xj - xi) * (p[1] - yi) / (yj - yi) + xi) c = !c;
+  }
+  return c;
+}
+
+/* ---------- Planos de ejemplo (para que el módulo muestre algo sin archivo) ---------- */
+function dxfEjemplo(ents, unidades = 4) {
+  const l = ['0', 'SECTION', '2', 'HEADER', '9', '$INSUNITS', '70', String(unidades), '0', 'ENDSEC', '0', 'SECTION', '2', 'ENTITIES'];
+  for (const e of ents) l.push(...e.map(String));
+  l.push('0', 'ENDSEC', '0', 'EOF');
+  return l.join('\n');
+}
+const lw = (capa, vs, cerrada) => ['0', 'LWPOLYLINE', '8', capa, '90', vs.length, '70', cerrada ? 1 : 0, ...vs.flatMap(([x, y, b = 0]) => ['10', x, '20', y, ...(b ? ['42', b] : [])])];
+const ln = (capa, x1, y1, z1, x2, y2, z2) => ['0', 'LINE', '8', capa, '10', x1, '20', y1, '30', z1, '11', x2, '21', y2, '31', z2];
+const ci = (capa, x, y, r) => ['0', 'CIRCLE', '8', capa, '10', x, '20', y, '30', 0, '40', r];
+const B90 = 0.41421356;   // bulge de un arco de 90°
+const EJEMPLOS_DXF = {
+  extruir: { nombre: 'ejemplo_placa.dxf', texto: () => dxfEjemplo([
+    lw('PIEZA', [[15, 0], [145, 0, B90], [160, 15], [160, 85, B90], [145, 100], [15, 100, B90], [0, 85], [0, 15, B90]], true),
+    ci('PIEZA', 25, 50, 8), ci('PIEZA', 135, 50, 8),
+    lw('PIEZA', [[65, 40], [95, 40, 1], [95, 60], [65, 60, 1]], true),
+    ln('COTAS', 0, -15, 0, 160, -15, 0),
+  ]) },
+  revolucion: { nombre: 'ejemplo_eje.dxf', texto: () => dxfEjemplo([
+    lw('PIEZA', [[0, 0], [0, 14], [1, 15], [40, 15], [40, 20], [120, 20], [120, 25], [140, 25], [140, 20], [200, 20], [200, 15], [239, 15], [240, 14], [240, 0]], true),
+    ln('EJE', -10, 0, 0, 250, 0, 0),
+  ]) },
+  estructura: { nombre: 'ejemplo_portico.dxf', texto: () => {
+    const e = [];
+    for (const z of [0, 2500]) {
+      e.push(ln('BARRAS', 0, 0, z, 0, 3000, z), ln('BARRAS', 4000, 0, z, 4000, 3000, z), ln('BARRAS', 0, 3000, z, 4000, 3000, z),
+        ln('BARRAS', 0, 2400, z, 600, 3000, z), ln('BARRAS', 4000, 2400, z, 3400, 3000, z));
+    }
+    for (const x of [0, 2000, 4000]) e.push(ln('BARRAS', x, 3000, 0, x, 3000, 2500));
+    e.push(ln('BARRAS', 0, 0, 0, 0, 3000, 2500), ln('BARRAS', 4000, 0, 0, 4000, 3000, 2500));
+    return dxfEjemplo(e);
+  } },
+};
+
+/* =====================================================================
+   MÓDULO: Importar plano DXF (extruir, revolucionar o estructura de barras)
+   ===================================================================== */
+const UNIDADES_DXF = { 1: ['pulgadas', 25.4], 2: ['pies', 304.8], 4: ['mm', 1], 5: ['cm', 10], 6: ['m', 1000] };
+const CAPA_IGNORADA = /COTA|DIM|TEXT|CAJ|MARCO|TITLE|BORDE|HATCH|DEFPOINTS|OCULT|HIDDEN|SOLDADURA/i;
+const CAPA_EJE = /EJE|AXIS|CENT/i;
+const MATERIALES_GENERALES = [
+  { id: 'A36',  nombre: 'Acero ASTM A36',          Re: 250, Rm: 400,  E: 200000, rho: 7850, trabajos: ['ligera', 'media'], uso: 'Acero estructural común.' },
+  { id: 'S355', nombre: 'Acero S355JR',            Re: 355, Rm: 510,  E: 210000, rho: 7850, trabajos: ['alta'], uso: 'Estructuras exigidas.' },
+  { id: '1045', nombre: 'Acero AISI 1045',         Re: 310, Rm: 565,  E: 207000, rho: 7850, trabajos: ['media'], uso: 'Piezas mecánicas de uso general.' },
+  { id: '4140', nombre: 'Acero AISI 4140 bonificado', Re: 655, Rm: 1020, E: 207000, rho: 7850, trabajos: ['alta'], uso: 'Ejes y piezas muy solicitadas.' },
+  { id: '304',  nombre: 'Inoxidable AISI 304',     Re: 215, Rm: 505,  E: 193000, rho: 7900, trabajos: ['corrosivo'], uso: 'Alimentos, humedad.' },
+  { id: '6061', nombre: 'Aluminio 6061-T6',        Re: 276, Rm: 310,  E: 69000,  rho: 2700, trabajos: ['ligera', 'corrosivo'], uso: 'Liviano, mecanizable.' },
+  { id: 'Lat',  nombre: 'Latón CW614N',            Re: 250, Rm: 400,  E: 97000,  rho: 8470, trabajos: ['corrosivo', 'ligera'], uso: 'Piezas torneadas, conexiones.' },
+  { id: 'Br',   nombre: 'Bronce SAE 65',           Re: 140, Rm: 310,  E: 110000, rho: 8800, trabajos: ['corrosivo', 'media'], uso: 'Bujes y coronas.' },
+  { id: 'Fe',   nombre: 'Fundición gris GG-25',    Re: 250, Rm: 250,  E: 110000, rho: 7200, trabajos: ['media'], uso: 'Carcasas, bancadas (frágil).' },
+  { id: 'PA',   nombre: 'Nailon PA6',              Re: 70,  Rm: 80,   E: 3000,   rho: 1140, trabajos: ['ligera', 'corrosivo'], uso: 'Bujes y piezas livianas.' },
+  { id: 'PMMA', nombre: 'Acrílico PMMA',           Re: 70,  Rm: 72,   E: 3200,   rho: 1190, trabajos: ['ligera'], uso: 'Tapas, protecciones transparentes.' },
+  { id: 'Mad',  nombre: 'Madera pino C24',         Re: 24,  Rm: 24,   E: 11000,  rho: 420,  trabajos: ['ligera'], uso: 'Estructuras livianas (EN 338).' },
+];
+const esEstr = (s) => s.modo === 'estructura';
+
+const moduloImportar = {
+  id: 'importar',
+  titulo: 'Importar plano DXF',
+  icono: 'i-importar',
+  descripcion: 'Abre un DXF de AutoCAD y conviértelo en 3D: extruye un contorno, revoluciona un medio perfil alrededor de su eje o arma una estructura de barras con el perfil que elijas. Luego exporta a STL (SolidWorks) o DXF.',
+  importado: null,      // { nombre, dxf, prims, capas: {nombre: {n, usar}}, version }
+
+  selectores: [
+    { id: 'modo', etiqueta: 'Cómo convertir el plano a 3D', estilo: 'segmentos', valor: 'extruir',
+      opciones: [['extruir', 'Extruir contorno', 'i-extruir'], ['revolucion', 'Revolucionar perfil', 'i-revolucion'], ['estructura', 'Estructura de barras', 'i-barras']] },
+    { id: 'unidades', etiqueta: 'Unidades del dibujo', estilo: 'fichas', valor: 'auto',
+      opciones: [['auto', 'Automático ($INSUNITS)'], ['mm', 'mm'], ['cm', 'cm'], ['m', 'm'], ['in', 'pulgadas']] },
+    { id: 'eje', etiqueta: 'Eje de revolución', estilo: 'fichas', valor: 'linea', visible: (s) => s.modo === 'revolucion',
+      opciones: [['linea', 'Línea de eje del dibujo'], ['abajo', 'Borde inferior (horizontal)'], ['izquierda', 'Borde izquierdo (vertical)'], ['origen_x', 'Eje X del dibujo'], ['origen_y', 'Eje Y del dibujo']] },
+    { id: 'plano', etiqueta: 'El dibujo es una…', estilo: 'fichas', valor: 'elevacion', visible: esEstr,
+      opciones: [['elevacion', 'Elevación (Y hacia arriba)'], ['planta', 'Planta (XY = piso)']] },
+    ...moduloEscalera.selectores.filter(s => ['seccion', 'perfil', 'apoyo'].includes(s.id))
+      .map(s => ({ ...s, visible: esEstr, valor: { seccion: 'I', perfil: 'IPE 160' }[s.id] ?? s.valor })),
+  ],
+
+  campos: [
+    { id: 'esp', etiqueta: 'Espesor de extrusión', uni: 'mm', min: 0.1, max: 5000, valor: 12, rmax: 200, paso: 0.5, visible: (s) => s.modo === 'extruir' },
+    { id: 'ang', etiqueta: 'Ángulo de revolución', uni: '°', min: 10, max: 360, valor: 360, paso: 5, visible: (s) => s.modo === 'revolucion' },
+    { id: 'esc', etiqueta: 'Factor de escala del dibujo', uni: '×', min: 0.001, max: 1000, valor: 1, rmax: 10, paso: 0.01 },
+    ...moduloEscalera.campos.filter(c => ['ph', 'pb', 'pt', 'pf'].includes(c.id))
+      .map(c => ({ ...c, valor: { ph: 160, pb: 82, pt: 5, pf: 7.4 }[c.id], visible: (s) => esEstr(s) && (!c.visible || c.visible(s)) })),   // IPE 160
+  ],
+
+  cargas: [
+    { id: 'P',  etiqueta: 'Carga puntual en la viga más larga', uni: 'kN', min: 0, max: 5000, valor: 1, rmax: 50, paso: 0.1, visible: esEstr },
+    { id: 'Q',  etiqueta: 'Carga vertical total sobre las columnas', uni: 'kN', min: 0, max: 50000, valor: 2, rmax: 100, paso: 0.1, visible: esEstr },
+    { id: 'lim', etiqueta: 'Flecha admisible L / …', uni: '', min: 100, max: 1000, valor: 300, paso: 10, visible: esEstr },
+    { id: 'FSr', etiqueta: 'Factor de seguridad mínimo', uni: '', min: 1, max: 10, valor: 2, paso: 0.1, rmax: 5, visible: esEstr },
+  ],
+
+  trabajos: [
+    ['todos', 'Todos los materiales'],
+    ['ligera', 'Carga ligera'],
+    ['media', 'Carga media'],
+    ['alta', 'Carga alta'],
+    ['corrosivo', 'Ambiente húmedo o corrosivo'],
+  ],
+  materiales: MATERIALES_GENERALES,
+  materialDefecto: 'A36',
+
+  alCambiarSelector(id, valor, ponerValores, sel) {
+    if (['seccion', 'perfil'].includes(id)) moduloEscalera.alCambiarSelector(id, valor, ponerValores, sel);
+    if (id === 'modo' && !this.importado?.propio) this.cargarTexto(EJEMPLOS_DXF[valor].texto(), EJEMPLOS_DXF[valor].nombre, false);
+  },
+  alEditarCampo(id) { if (['ph', 'pb', 'pt', 'pf'].includes(id)) ponerSelector('perfil', 'libre'); },
+  claveExtra() { return this.importado ? this.importado.version : 0; },
+
+  /* ---------- Carga del archivo ---------- */
+  cargarTexto(texto, nombre, propio) {
+    const dxf = leerDXF(texto);
+    const prims = primitivasDXF(dxf);
+    if (!prims.length) throw new Error('El DXF no tiene líneas, arcos, círculos ni polilíneas.');
+    const capas = {};
+    for (const p of prims) {
+      capas[p.capa] ??= { n: 0, usar: !CAPA_IGNORADA.test(p.capa), eje: CAPA_EJE.test(p.capa) };
+      capas[p.capa].n++;
+    }
+    this.importado = { nombre, dxf, prims, capas, propio, version: (this.importado?.version ?? 0) + 1 };
+    this.dibujarPanel();
+  },
+
+  panelExtra(cont) {
+    cont.innerHTML = `
+      <div class="zona-dxf" id="zona-dxf">
+        <svg class="ico-grande"><use href="#i-importar"/></svg>
+        <div><b>Arrastra aquí un archivo DXF</b><br><span class="nota">o</span>
+          <button type="button" class="claro" id="btn-dxf-abrir">Abrir archivo…</button></div>
+        <input type="file" id="in-dxf" accept=".dxf,.DXF,.dwg,.DWG" hidden>
+      </div>
+      <div id="dxf-info" class="nota"></div>
+      <div class="etq-grupo">Capas del dibujo <span style="font-weight:400;text-transform:none">(toca para usar u omitir)</span></div>
+      <div class="fichas" id="dxf-capas"></div>
+      <button type="button" class="claro" id="btn-dxf-ejemplo" style="margin-top:8px">Volver al ejemplo</button>`;
+    const abrir = async (f) => {
+      if (!f) return;
+      try {
+        if (/\.dwg$/i.test(f.name)) throw new Error('Los archivos DWG no se pueden leer directamente. En AutoCAD use Guardar como → DXF (o ODA File Converter) y abra el DXF.');
+        this.cargarTexto(await f.text(), f.name, true);
+        ultimaGeo = ''; actualizar(true);
+        toast('Plano cargado: ' + f.name);
+      } catch (e) {
+        console.error(e);
+        $('dxf-info').innerHTML = `<span style="color:var(--mal)">${esc(e.message)}</span>`;
+        toast('No se pudo abrir el plano.');
+      }
+    };
+    $('btn-dxf-abrir').addEventListener('click', () => $('in-dxf').click());
+    $('in-dxf').addEventListener('change', (e) => { abrir(e.target.files?.[0]); e.target.value = ''; });
+    const z = $('zona-dxf');
+    z.addEventListener('dragover', (e) => { e.preventDefault(); z.classList.add('encima'); });
+    z.addEventListener('dragleave', () => z.classList.remove('encima'));
+    z.addEventListener('drop', (e) => { e.preventDefault(); z.classList.remove('encima'); abrir(e.dataTransfer?.files?.[0]); });
+    $('btn-dxf-ejemplo').addEventListener('click', () => {
+      const ej = EJEMPLOS_DXF[estado.sel.modo];
+      this.cargarTexto(ej.texto(), ej.nombre, false);
+      ultimaGeo = ''; actualizar(true);
+    });
+    if (!this.importado) { const ej = EJEMPLOS_DXF[estado.sel.modo ?? 'extruir']; this.cargarTexto(ej.texto(), ej.nombre, false); }
+    this.dibujarPanel();
+  },
+
+  dibujarPanel() {
+    const imp = this.importado, info = $('dxf-info'), capas = $('dxf-capas');
+    if (!imp || !info || !capas) return;
+    const nEnt = imp.prims.length;
+    info.innerHTML = `<b>${esc(imp.nombre)}</b>${imp.propio ? '' : ' (ejemplo)'} · ${nEnt} elementos · ${Object.keys(imp.capas).length} capa(s)`;
+    capas.innerHTML = '';
+    for (const [nombre, c] of Object.entries(imp.capas)) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = c.usar ? 'activo' : '';
+      b.textContent = `${nombre} (${c.n})${c.eje ? ' · eje' : ''}`;
+      b.title = c.usar ? 'Se usa para la pieza' : 'Se omite';
+      b.addEventListener('click', () => { c.usar = !c.usar; imp.version++; this.dibujarPanel(); ultimaGeo = ''; actualizar(true); });
+      capas.appendChild(b);
+    }
+  },
+
+  /* ---------- Procesamiento geométrico ---------- */
+  escala(sel, v) {
+    const imp = this.importado;
+    const porSel = { mm: 1, cm: 10, m: 1000, in: 25.4 }[sel.unidades];
+    const auto = UNIDADES_DXF[imp?.dxf.header.insunits]?.[1] ?? 1;
+    return (sel.unidades === 'auto' ? auto : porSel) * (v.esc || 1);
+  },
+
+  procesar(v, sel) {
+    const imp = this.importado;
+    if (!imp) return null;
+    const k = this.escala(sel, v);
+    const usar = imp.prims.filter(p => imp.capas[p.capa]?.usar && !imp.capas[p.capa]?.eje);
+    const ejes = imp.prims.filter(p => imp.capas[p.capa]?.eje && p.pts.length === 2);
+    const esc3 = (q) => [q[0] * k, q[1] * k, (q[2] ?? 0) * k];
+    const prims = usar.map(p => ({ ...p, pts: p.pts.map(esc3) }));
+    let xs = [], ys = [], zs = [];
+    for (const p of prims) for (const q of p.pts) { xs.push(q[0]); ys.push(q[1]); zs.push(q[2]); }
+    if (!xs.length) return { vacio: true };
+    const caja = { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys), z0: Math.min(...zs), z1: Math.max(...zs) };
+    const diag = Math.hypot(caja.x1 - caja.x0, caja.y1 - caja.y0, caja.z1 - caja.z0) || 1;
+    const out = { k, caja, prims, ejes: ejes.map(p => ({ ...p, pts: p.pts.map(esc3) })), diag };
+    if (sel.modo === 'estructura') return out;
+    // contornos cerrados y jerarquía (agujeros e islas)
+    const { cerrados, abiertos } = encadenar(prims, Math.max(0.01, diag * 1e-4));
+    const lazos = cerrados.map(pts => ({ pts, pr: propsPoligono(pts) })).filter(l => Math.abs(l.pr.A) > 1e-6);
+    lazos.sort((a, b) => Math.abs(b.pr.A) - Math.abs(a.pr.A));
+    for (let i = 0; i < lazos.length; i++) {
+      let padre = null;
+      for (let j = i - 1; j >= 0; j--) if (dentro(lazos[i].pts[0], lazos[j].pts) && (!padre || Math.abs(lazos[j].pr.A) < Math.abs(padre.pr.A))) padre = lazos[j];
+      lazos[i].padre = padre;
+      lazos[i].nivel = padre ? padre.nivel + 1 : 0;
+    }
+    out.lazos = lazos; out.abiertos = abiertos;
+    return out;
+  },
+
+  ejeRevolucion(g, sel) {
+    const { caja } = g;
+    let P = [caja.x0, caja.y0], u = [1, 0], aviso = '';
+    if (sel.eje === 'linea') {
+      const l = g.ejes.sort((a, b) => Math.hypot(b.pts[1][0] - b.pts[0][0], b.pts[1][1] - b.pts[0][1]) - Math.hypot(a.pts[1][0] - a.pts[0][0], a.pts[1][1] - a.pts[0][1]))[0];
+      if (l) { const [a, b] = l.pts; const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; P = [a[0], a[1]]; u = [(b[0] - a[0]) / L, (b[1] - a[1]) / L]; }
+      else aviso = 'No se encontró una línea en una capa de eje (EJE, AXIS, CENTER): se usa el borde inferior.';
+    }
+    if (sel.eje === 'izquierda') u = [0, 1];
+    if (sel.eje === 'origen_x') { P = [0, 0]; u = [1, 0]; }
+    if (sel.eje === 'origen_y') { P = [0, 0]; u = [0, 1]; }
+    return { P, u, aviso };
+  },
+
+  validar(v, sel) {
+    const e = {};
+    const g = this.procesar(v, sel);
+    if (!g || g.vacio) { e.esc = 'No hay elementos en las capas elegidas.'; return e; }
+    if (sel.modo !== 'estructura' && !g.lazos.length) e[sel.modo === 'extruir' ? 'esp' : 'ang'] = 'El dibujo no tiene contornos cerrados (revise que las líneas se toquen).';
+    if (sel.modo === 'estructura') {
+      const s = moduloEscalera.validar({ ...v, bD: 60, bt: 3, tcol: 4, Dcol: 100, De: 1000, H: 1000, n: 10 }, { ...sel, tipo: 'escalera' });
+      for (const id of ['pt', 'pf']) if (s[id]) e[id] = s[id];
+    }
+    return e;
+  },
+
+  barras(v, sel, g) {
+    const lista = [];
+    const mapa = sel.plano === 'planta' ? ([x, y, z]) => V3(x - g.caja.x0, z - g.caja.z0, -(y - g.caja.y0)) : ([x, y, z]) => V3(x - g.caja.x0, y - g.caja.y0, z - g.caja.z0);
+    for (const p of g.prims) {
+      if (p.circulo) continue;
+      const pts = p.cerrada ? [...p.pts, p.pts[0]] : p.pts;
+      for (let k = 0; k + 1 < pts.length; k++) {
+        const a = mapa(pts[k]), b = mapa(pts[k + 1]);
+        if (a.distanceTo(b) > 1e-6) lista.push([a, b]);
+      }
+    }
+    return lista;
+  },
+
+  titulo3D(v, sel) {
+    const n = (this.importado?.nombre ?? 'plano').replace(/\.dxf$/i, '');
+    if (sel.modo === 'extruir') return `${n} · extruido ${fmt(v.esp, 1)} mm`;
+    if (sel.modo === 'revolucion') return `${n} · revolución ${fmt(v.ang, 0)}°`;
+    return `${n} · barras ${sel.perfil !== 'libre' ? sel.perfil : SECCIONES[sel.seccion][0]}`;
+  },
+
+  construir3D(v, sel) {
+    const grupo = new THREE.Group();
+    const g = this.procesar(v, sel);
+    if (!g || g.vacio) return grupo;
+    const mat = new THREE.MeshStandardMaterial({ color: 0x9fb0c4, metalness: 0.55, roughness: 0.4, side: THREE.DoubleSide });
+    const sx = g.caja.x0, sy = g.caja.y0;
+    if (sel.modo === 'extruir') {
+      for (const l of g.lazos.filter(l => l.nivel % 2 === 0)) {
+        const huecos = g.lazos.filter(h => h.padre === l).map(h => h.pts.map(([x, y]) => [x - sx, y - sy]));
+        const geo = new THREE.ExtrudeGeometry(aForma(l.pts.map(([x, y]) => [x - sx, y - sy]), huecos), { depth: v.esp, bevelEnabled: false, curveSegments: 1 });
+        grupo.add(new THREE.Mesh(geo, mat));
+      }
+    }
+    if (sel.modo === 'revolucion') {
+      const { P, u } = this.ejeRevolucion(g, sel);
+      const phi = Math.min(360, v.ang) * RAD;
+      for (const l of g.lazos.filter(l => l.nivel % 2 === 0)) {
+        const rh = l.pts.map(([x, y]) => { const dx = x - P[0], dy = y - P[1]; return [Math.abs(dx * u[1] - dy * u[0]), dx * u[0] + dy * u[1]]; });
+        const lathe = new THREE.LatheGeometry([...rh, rh[0]].map(([r, h]) => new THREE.Vector2(r, h)), 96, 0, phi);
+        const pieza = new THREE.Group();
+        pieza.add(new THREE.Mesh(lathe, mat));
+        if (phi < 2 * Math.PI - 1e-6) for (const a of [0, phi]) {   // tapas del corte
+          const tapa = new THREE.ShapeGeometry(aForma(rh));
+          tapa.rotateY(a - Math.PI / 2);
+          pieza.add(new THREE.Mesh(tapa, mat));
+        }
+        // orientar el eje (Y de la revolución) según el eje del dibujo y llevarlo a su posición
+        pieza.rotation.z = Math.atan2(u[1], u[0]) - Math.PI / 2;
+        pieza.position.set(P[0] - sx, P[1] - sy, 0);
+        grupo.add(pieza);
+      }
+    }
+    if (sel.modo === 'estructura') {
+      const sec = moduloEscalera.seccion(v, sel);
+      const forma = aForma(sec.contorno, sec.huecos);
+      const acero = new THREE.MeshStandardMaterial({ color: 0x2f6db5, metalness: 0.4, roughness: 0.45 });
+      const nudos = new Map();
+      for (const [a, b] of this.barras(v, sel, g)) {
+        barraPerfil(grupo, acero, a, b, forma);
+        for (const p of [a, b]) nudos.set(p.toArray().map(x => Math.round(x)).join(','), p);
+      }
+      const esf = new THREE.SphereGeometry(Math.max(sec.alto, sec.ancho) * 0.6, 16, 10);
+      const gris = new THREE.MeshStandardMaterial({ color: 0x1f3550, metalness: 0.4, roughness: 0.5 });
+      for (const p of nudos.values()) { const s = new THREE.Mesh(esf, gris); s.position.copy(p); grupo.add(s); }
+    }
+    return grupo;
+  },
+
+  /* Cálculos — propiedades de área por la fórmula de Green (polígonos), volumen de revolución por Pappus-Guldin;
+     estructura: verificación simplificada barra por barra (Hibbeler: viga apoyada con P al centro + peso propio;
+     Euler con K según apoyos). Para pórticos hiperestáticos se recomienda un análisis por elementos finitos. */
+  calcular(v, c, mat, sel) {
+    const g = this.procesar(v, sel);
+    const rho = mat.rho ?? 7850;
+    const filas = [['Archivo', this.importado?.nombre ?? '—'], ['Escala aplicada', `× ${fmt(g.k, 3)} (a mm)`]];
+    if (sel.modo !== 'estructura') {
+      const exterior = g.lazos.filter(l => l.nivel % 2 === 0), interior = g.lazos.filter(l => l.nivel % 2 === 1);
+      let A = 0, Sx = 0, Sy = 0, Ix = 0, Iy = 0, per = 0;
+      for (const l of g.lazos) {
+        const s = l.nivel % 2 === 0 ? 1 : -1, a = Math.abs(l.pr.A) * s, sg = Math.sign(l.pr.A) * s;
+        A += a; Sx += a * l.pr.Cx; Sy += a * l.pr.Cy; Ix += l.pr.Ix * sg; Iy += l.pr.Iy * sg; per += l.pr.per;
+      }
+      const cx = Sx / A, cy = Sy / A;
+      filas.push(['Contornos / agujeros', `${exterior.length} / ${interior.length}`]);
+      if (g.abiertos.length) filas.push(['Tramos abiertos ignorados', String(g.abiertos.length), false]);
+      filas.push(['Medidas del dibujo', `${fmt(g.caja.x1 - g.caja.x0, 1)} × ${fmt(g.caja.y1 - g.caja.y0, 1)} mm`],
+        ['Área de la figura', fmt(A, 1) + ' mm²'], ['Perímetro total', fmt(per, 1) + ' mm']);
+      let V;
+      if (sel.modo === 'extruir') {
+        V = A * v.esp;
+        filas.push(['Centroide (desde la esquina inferior izq.)', `${fmt(cx - g.caja.x0, 1)} ; ${fmt(cy - g.caja.y0, 1)} mm`],
+          ['Inercia Iₓ del área (centroidal)', fmt((Ix - A * cy * cy) / 1e4, 2) + ' cm⁴'], ['Inercia I_y del área (centroidal)', fmt((Iy - A * cx * cx) / 1e4, 2) + ' cm⁴']);
+      } else {
+        const { P, u, aviso } = this.ejeRevolucion(g, sel);
+        V = 0; let cruza = false, rmax = 0, hmin = Infinity, hmax = -Infinity;
+        for (const l of g.lazos) {
+          const rh = l.pts.map(([x, y]) => { const dx = x - P[0], dy = y - P[1]; return [dx * u[1] - dy * u[0], dx * u[0] + dy * u[1]]; });
+          if (rh.some(q => q[0] > 1e-6) && rh.some(q => q[0] < -1e-6)) cruza = true;
+          const pr = propsPoligono(rh.map(([r, h]) => [Math.abs(r), h]));
+          V += (l.nivel % 2 === 0 ? 1 : -1) * Math.abs(pr.A) * 2 * Math.PI * Math.abs(pr.Cx);   // Pappus-Guldin
+          for (const [r, h] of rh) { rmax = Math.max(rmax, Math.abs(r)); hmin = Math.min(hmin, h); hmax = Math.max(hmax, h); }
+        }
+        V *= Math.min(360, v.ang) / 360;
+        filas.push(['Diámetro máximo', fmt(2 * rmax, 1) + ' mm'], ['Largo según el eje', fmt(hmax - hmin, 1) + ' mm']);
+        if (aviso) filas.push(['Eje', aviso, false]);
+        if (cruza) filas.push(['Perfil a ambos lados del eje', 'dibuje sólo medio perfil', false]);
+      }
+      const masa = V * 1e-9 * rho;
+      filas.push(['Volumen', fmt(V / 1000, 2) + ' cm³'], [`Masa (ρ = ${rho} kg/m³)`, fmt(masa, 3) + ' kg'], ['Peso', fmt(masa * G, 2) + ' N']);
+      return { filas, ok: true, msg: `Pieza generada: ${fmt(V / 1000, 1)} cm³ · ${fmt(masa, 3)} kg de ${mat.nombre}` };
+    }
+    // ---- estructura de barras ----
+    const sec = moduloEscalera.seccion(v, sel);
+    const barras = this.barras(v, sel, g);
+    const E = mat.E ?? 200000, K = APOYOS[sel.apoyo]?.[1] ?? 1;
+    const largos = barras.map(([a, b]) => a.distanceTo(b));
+    const Ltot = largos.reduce((s, x) => s + x, 0);
+    const peso = Ltot * sec.A * 1e-9 * rho * G;
+    const vert = [], horiz = [], diag = [];
+    barras.forEach(([a, b], k) => { const d = new THREE.Vector3().subVectors(b, a).normalize(); const cy = Math.abs(d.y);
+      (cy > 0.95 ? vert : cy < 0.1 ? horiz : diag).push(largos[k]); });
+    const nudos = new Set(barras.flatMap(([a, b]) => [a, b].map(p => p.toArray().map(x => Math.round(x)).join(','))));
+    filas.push(['Barras / nudos', `${barras.length} / ${nudos.size}`], ['Verticales / horizontales / diagonales', `${vert.length} / ${horiz.length} / ${diag.length}`],
+      ['Perfil', sel.perfil !== 'libre' ? sel.perfil : SECCIONES[sel.seccion][0]], ['Largo total de perfil', fmt(Ltot / 1000, 2) + ' m'],
+      ['Peso propio', fmt(peso / G, 1) + ' kg']);
+    const fsL = []; let okF = true;
+    if (horiz.length) {
+      const L = Math.max(...horiz), P = c.P * 1000, w = sec.A * 1e-9 * rho * G;   // N/mm
+      const M = P * L / 4 + w * L * L / 8, s = M / sec.Sx, d = P * L ** 3 / (48 * E * sec.Ix) + 5 * w * L ** 4 / (384 * E * sec.Ix);
+      const fs = mat.Re / s; fsL.push(fs); okF = d <= L / c.lim;
+      filas.push([`Viga más larga (${fmt(L, 0)} mm): σ`, fmt(s, 1) + ' MPa'], ['Viga más larga: FS', fmt(fs, 2), fs >= c.FSr], [`Viga más larga: flecha (lím. ${fmt(L / c.lim, 1)})`, fmt(d, 2) + ' mm', okF]);
+    }
+    if (vert.length) {
+      const L = Math.max(...vert), N = (c.Q * 1000 + peso) / vert.length;
+      const Pcr = Math.PI ** 2 * E * sec.Imin / (K * L) ** 2, lam = K * L / sec.r;
+      const fsP = Pcr / N; fsL.push(fsP, mat.Re / (N / sec.A));
+      filas.push([`Columna más larga (${fmt(L, 0)} mm): carga`, fmt(N / 1000, 2) + ' kN'], ['Columna: esbeltez λ', fmt(lam, 0), lam <= 200], ['Columna: FS pandeo', fmt(fsP, 1), fsP >= c.FSr]);
+    }
+    // lista de corte
+    const cortes = {};
+    for (const L of largos) { const k = Math.round(L); cortes[k] = (cortes[k] ?? 0) + 1; }
+    Object.entries(cortes).sort((a, b) => b[0] - a[0]).slice(0, 8).forEach(([L, n]) => filas.push([`Corte ${L} mm`, `× ${n}`]));
+    filas.push(['Nota', 'verificación simplificada barra por barra']);
+    if (!fsL.length) return { filas, ok: true, msg: `Estructura de ${barras.length} barras · ${fmt(peso / G, 1)} kg de perfil` };
+    const fs = Math.min(...fsL), ok = fs >= c.FSr && okF;
+    const msg = ok ? `CUMPLE: FS mínimo = ${fmt(fs, 2)} ≥ ${fmt(c.FSr, 1)} · ${fmt(peso / G, 1)} kg de perfil`
+      : fs < c.FSr ? `NO CUMPLE: FS mínimo = ${fmt(fs, 2)} < ${fmt(c.FSr, 1)}. Use un perfil mayor.` : 'NO CUMPLE: flecha excesiva en la viga más larga.';
+    return { filas, ok, msg, fs, fsMin: c.FSr };
+  },
+
+  dibujarDXF(v, sel, dxf, E, ox, oy) {
+    const g = this.procesar(v, sel);
+    if (!g || g.vacio) return;
+    const X = (x) => ox + x * E, Y = (y) => oy + y * E;
+    const sx = g.caja.x0, sy = g.caja.y0, W = g.caja.x1 - sx, H = g.caja.y1 - sy;
+    if (sel.modo === 'estructura') {
+      const barras = this.barras(v, sel, g);
+      const cx = barras.flatMap(b => b.map(p => p.x)), cz = barras.flatMap(b => b.map(p => p.z));
+      const Wx = Math.max(...cx), z0 = Math.min(...cz), Dz = Math.max(...cz) - z0;
+      const gap = Math.max(200, 0.15 * Wx);
+      for (const [a, b] of barras) {
+        dxf.linea(X(a.x), Y(a.y), X(b.x), Y(b.y), 'CONTORNO');                                   // alzado
+        if (Dz > 1) dxf.linea(X(Wx + gap + (a.z - z0)), Y(a.y), X(Wx + gap + (b.z - z0)), Y(b.y), 'CONTORNO');   // vista lateral
+      }
+      dxf.cota(X(0), Y(0), X(Wx), Y(0), -12, 'L = ' + fmt(Wx, 0));
+      dxf.texto(X(0), Y(0) - 22, 2.5, `Perfil ${sel.perfil !== 'libre' ? sel.perfil : SECCIONES[sel.seccion][0]} · ${barras.length} barras`);
+      return;
+    }
+    for (const l of g.lazos) dxf.poligono(l.pts.map(([x, y]) => [X(x - sx), Y(y - sy)]), 'CONTORNO');
+    dxf.cota(X(0), Y(0), X(W), Y(0), -10, fmt(W, 1));
+    dxf.cota(X(0), Y(H), X(0), Y(0), -10, fmt(H, 1));
+    if (sel.modo === 'extruir') {
+      const gap = Math.max(20, 0.3 * W);
+      dxf.rect(X(W + gap), Y(0), X(W + gap + v.esp), Y(H), 'CONTORNO');
+      dxf.cota(X(W + gap), Y(H), X(W + gap + v.esp), Y(H), 6, 'e = ' + fmt(v.esp, 1));
+    } else {
+      const { P, u } = this.ejeRevolucion(g, sel);
+      const L = Math.max(W, H) * 1.2, cx = P[0] - sx, cy = P[1] - sy;
+      dxf.linea(X(cx - u[0] * L * 0.1), Y(cy - u[1] * L * 0.1), X(cx + u[0] * L), Y(cy + u[1] * L), 'EJES');
+      for (const l of g.lazos) dxf.poligono(l.pts.map(([x, y]) => {   // simétrico respecto del eje
+        const dx = x - P[0], dy = y - P[1], d = dx * u[1] - dy * u[0];
+        return [X(x - sx - 2 * d * u[1]), Y(y - sy + 2 * d * u[0])];
+      }), 'OCULTAS');
+    }
+  },
+
+  extensionDXF(v, sel) {
+    const g = this.procesar(v, sel);
+    if (!g || g.vacio) return [0, 0, 100, 100];
+    const W = g.caja.x1 - g.caja.x0, H = g.caja.y1 - g.caja.y0;
+    if (sel.modo === 'estructura') {
+      const barras = this.barras(v, sel, g);
+      const xs = barras.flatMap(b => b.map(p => p.x)), ys = barras.flatMap(b => b.map(p => p.y)), zs = barras.flatMap(b => b.map(p => p.z));
+      const Wx = Math.max(...xs), Dz = Math.max(...zs) - Math.min(...zs);
+      return [0, 0, Wx + (Dz > 1 ? Math.max(200, 0.15 * Wx) + Dz : 0), Math.max(...ys)];
+    }
+    if (sel.modo === 'extruir') return [0, 0, W + Math.max(20, 0.3 * W) + v.esp, H];
+    // revolución: incluye la mitad simétrica
+    const { P, u } = this.ejeRevolucion(g, sel);
+    const pts = g.lazos.flatMap(l => l.pts).flatMap(([x, y]) => { const dx = x - P[0], dy = y - P[1], d = dx * u[1] - dy * u[0];
+      return [[x - g.caja.x0, y - g.caja.y0], [x - g.caja.x0 - 2 * d * u[1], y - g.caja.y0 + 2 * d * u[0]]]; });
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+    return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+  },
+};
+
+const MODULOS = { importar: moduloImportar, pernos: moduloPernos, soldadura: moduloSoldadura, escalera: moduloEscalera, pinon: moduloPinon,
   conico: moduloConico, sinfin: moduloSinfin, polea: moduloPolea, rodamiento: moduloRodamiento };
 
 /* =====================================================================
@@ -3597,6 +4286,8 @@ function cargarModulo(id) {
 
   $('mod-titulo').textContent = m.titulo;
   $('mod-desc').textContent = m.descripcion;
+  $('modulo-extra').innerHTML = '';
+  m.panelExtra?.call(m, $('modulo-extra'));
   $('mod-icono').innerHTML = `<use href="#${m.icono}"/>`;
   const cs = $('selectores'); cs.innerHTML = '';
   m.selectores.forEach(s => crearSelector(s, cs));
@@ -3704,6 +4395,7 @@ function validar() {
     div.querySelector('.msg')?.remove();
     if (err[c.id]) { const s = document.createElement('span'); s.className = 'msg'; s.textContent = err[c.id]; div.appendChild(s); }
   }
+  $('cargas').closest('details').hidden = !m.cargas.some(campoVisible);
   estado.errores = err;
   return Object.keys(err).length === 0;
 }
@@ -3731,7 +4423,7 @@ function actualizar(encuadrar) {
   $('caj-esc').textContent = escalaPlano().etiqueta;
 
   // geometría: sólo se regenera si cambian las medidas o selectores
-  const clave = JSON.stringify([m.campos.map(c => v[c.id]), estado.sel]);
+  const clave = JSON.stringify([m.campos.map(c => v[c.id]), estado.sel, m.claveExtra?.() ?? 0]);
   if (clave !== ultimaGeo) {
     ultimaGeo = clave;
     try { mostrarPieza(m.construir3D(v, estado.sel), encuadrar); }
@@ -3754,6 +4446,7 @@ function actualizar(encuadrar) {
   }
   ponerVeredicto(r.ok, r.msg);
   // medidor: FS mínimo en el centro, doble del mínimo a la derecha
+  $('medidor').hidden = !Number.isFinite(r.fsMin);
   if (Number.isFinite(r.fsMin)) {
     const fs = Number.isFinite(r.fs) ? r.fs : 2 * r.fsMin;
     const pos = Math.max(0, Math.min(1, fs / (2 * r.fsMin)));

@@ -77,6 +77,17 @@ y exportarlas a programas CAD.
      transmisión o polea sola. Euler-Eytelwein, fuerza centrífuga, número de
      correas o ancho necesario, largo de correa, tensiones, carga en ejes,
      velocidad máxima del material.
+   - ✅ **Importar plano DXF** (DXF ASCII de AutoCAD; DWG no: se explica cómo
+     convertirlo): lector propio de LINE, LWPOLYLINE/POLYLINE con arcos (bulge),
+     CIRCLE, ARC, ELLIPSE, SPLINE (aprox.) e INSERT (bloques), $INSUNITS,
+     extrusión invertida. Capas de cotas/texto/cajetín se omiten; capas
+     EJE/AXIS/CENTER son ejes. Tres modos: **extruir** (contornos encadenados,
+     agujeros e islas; área, centroide, inercias, volumen, masa),
+     **revolucionar** (eje por línea del dibujo, borde o eje de coordenadas;
+     ángulo parcial con tapas; volumen por Pappus) y **estructura de barras**
+     (cada línea 2D/3D es una barra del perfil elegido; peso, lista de corte,
+     viga más larga y columnas). Ejemplos incluidos; archivos de prueba en
+     `ejemplos/`.
    - Ideas siguientes: eje (flexión + torsión, ASME), cadenas y piñones de
      cadena, resortes, engranajes cónicos helicoidales.
 
