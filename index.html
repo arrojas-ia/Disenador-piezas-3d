@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diseñador de Piezas 3D</title>
+<style>
+  :root {
+    --fondo: #eef1f5;
+    --panel: #ffffff;
+    --borde: #d3d9e2;
+    --texto: #1b2430;
+    --suave: #5b6878;
+    --acento: #1f5fbf;
+    --acento-osc: #174a96;
+    --ok: #1e8a4c;
+    --mal: #c0392b;
+    --aviso: #b7791f;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    color: var(--texto);
+    background: var(--fondo);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---------- Cabecera ---------- */
+  header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px;
+    background: #16202e; color: #fff;
+  }
+  header h1 { font-size: 18px; margin: 0; font-weight: 600; flex: 1; }
+  header h1 small { font-weight: 400; color: #9fb0c6; margin-left: 8px; }
+  button {
+    font: inherit; cursor: pointer;
+    border: 1px solid var(--acento); background: var(--acento); color: #fff;
+    padding: 7px 14px; border-radius: 6px;
+  }
+  button:hover { background: var(--acento-osc); }
+  button.sec { background: transparent; border-color: #5b6c84; color: #dfe7f2; }
+  button.sec:hover { background: #243246; }
+
+  /* ---------- Distribución principal ---------- */
+  main {
+    flex: 1; min-height: 0;
+    display: grid;
+    grid-template-columns: 210px 380px 1fr;
+  }
+  nav {
+    background: #1e2a3b; color: #cfd8e3;
+    padding: 12px 0; overflow-y: auto;
+  }
+  nav h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
+           color: #8193aa; margin: 6px 16px 8px; }
+  nav button {
+    display: block; width: 100%; text-align: left;
+    background: none; border: 0; border-radius: 0; color: inherit;
+    padding: 10px 16px; border-left: 3px solid transparent;
+  }
+  nav button:hover:not(:disabled) { background: #273648; }
+  nav button.activo { background: #273648; border-left-color: #5aa0ff; color: #fff; }
+  nav button:disabled { color: #6c7c92; cursor: not-allowed; }
+  nav button .etq { display: block; font-size: 11px; color: #7f91a8; }
+
+  #panel {
+    background: var(--panel); border-right: 1px solid var(--borde);
+    overflow-y: auto; padding: 14px 16px 24px;
+  }
+  #panel h2 { font-size: 17px; margin: 0 0 4px; }
+  #panel h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em;
+              color: var(--suave); margin: 18px 0 8px; border-bottom: 1px solid var(--borde);
+              padding-bottom: 4px; }
+  .desc { color: var(--suave); margin: 0 0 6px; font-size: 13px; }
+
+  .campo { display: grid; grid-template-columns: 1fr 110px 42px; align-items: center;
+           gap: 6px; margin-bottom: 6px; }
+  .campo label { font-size: 14px; }
+  .campo input, .campo select, select.ancho, input.ancho {
+    font: inherit; padding: 5px 7px; border: 1px solid var(--borde); border-radius: 5px;
+    width: 100%; background: #fff; color: var(--texto);
+  }
+  .campo .uni { font-size: 12px; color: var(--suave); }
+  .campo.error input { border-color: var(--mal); background: #fdf0ee; }
+  .campo .msg { grid-column: 1 / -1; color: var(--mal); font-size: 12px; margin-top: -2px; }
+  select.ancho, input.ancho { margin-bottom: 8px; }
+  .fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .nota { font-size: 12px; color: var(--suave); margin: 2px 0 8px; }
+
+  table.res { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.res td { padding: 4px 2px; border-bottom: 1px solid #eef1f5; }
+  table.res td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.ok { color: var(--ok); font-weight: 600; }
+  td.mal { color: var(--mal); font-weight: 600; }
+  .veredicto { margin-top: 10px; padding: 10px 12px; border-radius: 6px; font-weight: 600; }
+  .veredicto.ok { background: #e3f4ea; color: var(--ok); }
+  .veredicto.mal { background: #fbe7e4; color: var(--mal); }
+
+  /* ---------- Visor ---------- */
+  #visor-cont { position: relative; min-width: 0; min-height: 0; background: linear-gradient(#f7f9fc, #dfe5ee); }
+  #visor { position: absolute; inset: 0; }
+  #visor canvas { display: block; }
+  .herr-visor { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; }
+  .herr-visor button { background: rgba(255,255,255,.9); color: var(--texto); border-color: var(--borde); padding: 5px 10px; font-size: 13px; }
+  .herr-visor button:hover { background: #fff; }
+  #aviso-3d { position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+              text-align: center; padding: 20px; color: var(--mal); }
+
+  /* ---------- Cajetín ---------- */
+  #cajetin {
+    position: absolute; right: 12px; bottom: 12px;
+    background: #fff; border: 2px solid #1b2430;
+    display: grid; grid-template-columns: 90px 150px 90px 90px;
+    font-size: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.12);
+  }
+  #cajetin div { border: 1px solid #1b2430; padding: 3px 6px; min-height: 22px; }
+  #cajetin .k { font-size: 10px; color: var(--suave); text-transform: uppercase; }
+  #cajetin .v { font-weight: 600; }
+  #cajetin .titulo { grid-column: 1 / -1; font-size: 14px; font-weight: 700; text-align: center; }
+  #cajetin input { font: inherit; font-weight: 600; border: 0; padding: 0; width: 100%; }
+  #caj-num { color: var(--acento); font-size: 14px; }
+
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+           background: #16202e; color: #fff; padding: 10px 18px; border-radius: 6px;
+           opacity: 0; transition: opacity .25s; pointer-events: none; }
+  #toast.ver { opacity: 1; }
+
+  @media (max-width: 1000px) {
+    main { grid-template-columns: 1fr; grid-template-rows: auto auto 70vh; }
+    nav { display: flex; overflow-x: auto; padding: 0; }
+    nav h2 { display: none; }
+    nav button { width: auto; white-space: nowrap; border-left: 0; border-bottom: 3px solid transparent; }
+    nav button.activo { border-bottom-color: #5aa0ff; }
+    #cajetin { grid-template-columns: 70px 1fr 70px 70px; left: 12px; }
+    header { flex-wrap: wrap; }
+  }
+</style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<header>
+  <h1>Diseñador de Piezas 3D <small>medidas manuales · cálculo · exportación CAD</small></h1>
+  <button class="sec" id="btn-nueva" title="Asigna el siguiente número correlativo">Nueva pieza</button>
+  <button id="btn-dxf" title="Plano 2D para AutoCAD">Exportar DXF</button>
+  <button id="btn-stl" title="Malla 3D para SolidWorks">Exportar STL</button>
+</header>
+
+<main>
+  <!-- Menú de módulos -->
+  <nav id="menu">
+    <h2>Módulos</h2>
+    <button data-modulo="pernos" class="activo">Pernos y roscas<span class="etq">Rosca interna / externa</span></button>
+    <button disabled>Escalera / plataforma<span class="etq">Próximamente · 90 kg + herramientas</span></button>
+    <button disabled>Piñón con chavetero<span class="etq">Próximamente</span></button>
+    <h2>Herramientas</h2>
+    <button disabled>Foto + IA<span class="etq">Próximamente · proponer medidas</span></button>
+  </nav>
+
+  <!-- Panel de medidas y cálculos -->
+  <section id="panel">
+    <h2 id="mod-titulo"></h2>
+    <p class="desc" id="mod-desc"></p>
+
+    <h3>Medidas</h3>
+    <div id="campos"></div>
+
+    <h3>Material</h3>
+    <label class="nota" for="trabajo">Trabajo que soporta la pieza</label>
+    <select id="trabajo" class="ancho"></select>
+    <select id="material" class="ancho"></select>
+    <div id="mat-manual" hidden>
+      <input id="mat-nombre" class="ancho" placeholder="Nombre del material (ej. AISI 4140)">
+      <div class="fila2">
+        <div class="campo" style="grid-template-columns:1fr 70px"><label for="mat-re">Re (MPa)</label><input id="mat-re" type="number" value="400"></div>
+        <div class="campo" style="grid-template-columns:1fr 70px"><label for="mat-rm">Rm (MPa)</label><input id="mat-rm" type="number" value="600"></div>
+      </div>
+    </div>
+    <p class="nota" id="mat-info"></p>
+
+    <h3>Cargas de trabajo</h3>
+    <div id="cargas"></div>
+
+    <h3>Cálculos</h3>
+    <table class="res" id="resultados"></table>
+    <div id="veredicto" class="veredicto"></div>
+  </section>
+
+  <!-- Visor 3D -->
+  <section id="visor-cont">
+    <div id="visor"></div>
+    <div class="herr-visor">
+      <button id="btn-encuadrar">Encuadrar</button>
+      <button id="btn-girar">Girar: no</button>
+      <button id="btn-alambre">Alambre: no</button>
+    </div>
+    <div id="aviso-3d"></div>
+
+    <div id="cajetin" aria-label="Cajetín">
+      <div class="titulo" id="caj-titulo">—</div>
+      <div><span class="k">Nº plano</span><br><span class="v" id="caj-num">PZ-0001</span></div>
+      <div><span class="k">Material</span><br><span class="v" id="caj-mat">—</span></div>
+      <div><span class="k">Escala</span><br><span class="v" id="caj-esc">1:1</span></div>
+      <div><span class="k">Fecha</span><br><span class="v" id="caj-fecha">—</span></div>
+      <div><span class="k">Dibujó</span><br><input id="caj-autor" placeholder="Nombre" aria-label="Dibujó"></div>
+      <div style="grid-column: span 3"><span class="k">Proyecto</span><br><input id="caj-proyecto" placeholder="Proyecto / institución" aria-label="Proyecto"></div>
+    </div>
+  </section>
+</main>
+
+<div id="toast"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+/* =====================================================================
+   Utilidades
+   ===================================================================== */
+const $ = (id) => document.getElementById(id);
+const fmt = (x, dec = 2) => Number.isFinite(x) ? x.toLocaleString('es', { maximumFractionDigits: dec, minimumFractionDigits: dec }) : '—';
+
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('ver');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('ver'), 2500);
+}
+
+function descargar(nombre, contenido, tipo) {
+  const blob = contenido instanceof Blob ? contenido : new Blob([contenido], { type: tipo });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+const almacen = {
+  leer(k, def) { try { const v = localStorage.getItem(k); return v === null ? def : v; } catch { return def; } },
+  guardar(k, v) { try { localStorage.setItem(k, v); } catch { /* sin almacenamiento: seguimos */ } },
+};
+
+/* =====================================================================
+   Geometría de roscas
+   Perfil ISO 68-1 simplificado: cresta plana p/8, fondo plano p/4,
+   flancos rectos a 60°. Hélice a derechas.
+   ===================================================================== */
+function perfilRosca(fase) {
+  // fase en [0,1). Devuelve 1 en la cresta y 0 en el fondo.
+  const u = fase - Math.floor(fase);
+  if (u < 0.0625 || u >= 0.9375) return 1;
+  if (u < 0.375) return 1 - (u - 0.0625) / 0.3125;
+  if (u < 0.625) return 0;
+  return (u - 0.625) / 0.3125;
+}
+
+/**
+ * Superficie helicoidal roscada alrededor del eje Y, de y=0 a y=largo.
+ * externa=true  → rosca de perno (normales hacia fuera, cresta en rMayor).
+ * externa=false → rosca de tuerca (normales hacia el eje, cresta en rMenor).
+ */
+function geometriaRosca({ rMayor, rMenor, paso, largo, externa = true, chaflanFinal = true }) {
+  const nTheta = 72;
+  const porPaso = 18;
+  const nY = Math.max(2, Math.min(4000, Math.ceil((largo / paso) * porPaso)));
+  const h = rMayor - rMenor;
+  const pos = [];
+  const idx = [];
+  for (let i = 0; i <= nY; i++) {
+    const y = (i / nY) * largo;
+    for (let j = 0; j <= nTheta; j++) {
+      const th = (j / nTheta) * Math.PI * 2;
+      const fase = y / paso + th / (Math.PI * 2);
+      let r;
+      if (externa) {
+        r = rMenor + h * perfilRosca(fase);
+        if (chaflanFinal) r = Math.min(r, rMenor * 0.97 + (largo - y)); // chaflán 45° en la punta
+      } else {
+        r = rMayor - h * perfilRosca(fase);
+      }
+      pos.push(r * Math.cos(th), y, r * Math.sin(th));
+    }
+  }
+  const fila = nTheta + 1;
+  for (let i = 0; i < nY; i++) {
+    for (let j = 0; j < nTheta; j++) {
+      const a = i * fila + j, b = a + 1, c = a + fila, d = c + 1;
+      if (externa) { idx.push(a, c, b, b, c, d); }
+      else { idx.push(a, b, c, b, d, c); }
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+
+/** Prisma hexagonal (entre caras = s) con eje Y, de y=0 a y=alto, con o sin agujero. */
+function geometriaHexagono(s, alto, rAgujero = 0) {
+  const R = s / Math.sqrt(3); // radio entre esquinas
+  const forma = new THREE.Shape();
+  for (let k = 0; k < 6; k++) {
+    const a = (Math.PI / 3) * k;
+    const x = R * Math.cos(a), y = R * Math.sin(a);
+    k === 0 ? forma.moveTo(x, y) : forma.lineTo(x, y);
+  }
+  forma.closePath();
+  if (rAgujero > 0) {
+    const ag = new THREE.Path();
+    ag.absarc(0, 0, rAgujero, 0, Math.PI * 2, true);
+    forma.holes.push(ag);
+  }
+  const bisel = Math.min(alto * 0.08, s * 0.04);
+  const g = new THREE.ExtrudeGeometry(forma, {
+    depth: alto - 2 * bisel, bevelEnabled: true, bevelThickness: bisel, bevelSize: bisel,
+    bevelOffset: -bisel, bevelSegments: 1, curveSegments: 48,
+  });
+  g.rotateX(-Math.PI / 2);          // extrusión a lo largo de +Y
+  g.translate(0, bisel, 0);
+  return g;
+}
+
+/* =====================================================================
+   Escritor DXF (R12 / AC1009) — compatible con AutoCAD
+   ===================================================================== */
+class DXF {
+  constructor() { this.ent = []; }
+  _p(...pares) { for (let i = 0; i < pares.length; i += 2) this.ent.push(pares[i], pares[i + 1]); }
+  linea(x1, y1, x2, y2, capa = 'CONTORNO') { this._p(0, 'LINE', 8, capa, 10, x1, 20, y1, 30, 0, 11, x2, 21, y2, 31, 0); }
+  circulo(x, y, r, capa = 'CONTORNO') { this._p(0, 'CIRCLE', 8, capa, 10, x, 20, y, 30, 0, 40, r); }
+  arco(x, y, r, a1, a2, capa = 'CONTORNO') { this._p(0, 'ARC', 8, capa, 10, x, 20, y, 30, 0, 40, r, 50, a1, 51, a2); }
+  rect(x1, y1, x2, y2, capa) { this.linea(x1, y1, x2, y1, capa); this.linea(x2, y1, x2, y2, capa); this.linea(x2, y2, x1, y2, capa); this.linea(x1, y2, x1, y1, capa); }
+  texto(x, y, alto, txt, { capa = 'TEXTO', centrado = false, rot = 0 } = {}) {
+    const t = String(txt).replace(/[\r\n]/g, ' ');
+    if (centrado) this._p(0, 'TEXT', 8, capa, 10, x, 20, y, 30, 0, 40, alto, 1, t, 50, rot, 72, 1, 11, x, 21, y, 31, 0);
+    else this._p(0, 'TEXT', 8, capa, 10, x, 20, y, 30, 0, 40, alto, 1, t, 50, rot);
+  }
+  poligono(pts, capa) { for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length]; this.linea(a[0], a[1], b[0], b[1], capa); } }
+
+  /** Cota lineal entre (x1,y1) y (x2,y2), desplazada 'off' (en papel) en la normal. */
+  cota(x1, y1, x2, y2, off, texto, alto = 2.5) {
+    const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1;
+    const nx = -dy / L, ny = dx / L, ux = dx / L, uy = dy / L;
+    const a = [x1 + nx * off, y1 + ny * off], b = [x2 + nx * off, y2 + ny * off];
+    const ext = Math.sign(off) * 1.5;
+    this.linea(x1 + nx * Math.sign(off), y1 + ny * Math.sign(off), a[0] + nx * ext, a[1] + ny * ext, 'COTAS');
+    this.linea(x2 + nx * Math.sign(off), y2 + ny * Math.sign(off), b[0] + nx * ext, b[1] + ny * ext, 'COTAS');
+    this.linea(a[0], a[1], b[0], b[1], 'COTAS');
+    const fl = 2.5, fw = 0.8; // flechas
+    for (const [p, s] of [[a, 1], [b, -1]]) {
+      this.linea(p[0], p[1], p[0] + s * ux * fl + nx * fw, p[1] + s * uy * fl + ny * fw, 'COTAS');
+      this.linea(p[0], p[1], p[0] + s * ux * fl - nx * fw, p[1] + s * uy * fl - ny * fw, 'COTAS');
+    }
+    // texto sobre la línea de cota, siempre legible (sin quedar cabeza abajo)
+    const ang = Math.atan2(uy, ux) * 180 / Math.PI;
+    const girado = ang > 90 || ang <= -90;
+    const rot = girado ? ang + 180 : ang;
+    const ax = girado ? -nx : nx, ay = girado ? -ny : ny; // dirección "arriba" del texto
+    this.texto((a[0] + b[0]) / 2 + ax * 0.8, (a[1] + b[1]) / 2 + ay * 0.8, alto, texto, { capa: 'COTAS', centrado: true, rot });
+  }
+
+  generar() {
+    const out = [];
+    // Pares código/valor. Los códigos 10–59 son reales: siempre con decimales.
+    const p = (...v) => {
+      for (const x of v) {
+        if (typeof x !== 'number') { out.push(x); continue; }
+        const codigoAnterior = out.length % 2 === 1 ? Number(out[out.length - 1]) : NaN;
+        const real = codigoAnterior >= 10 && codigoAnterior <= 59;
+        out.push(real ? x.toFixed(4) : String(Math.round(x)));
+      }
+    };
+    p(0, 'SECTION', 2, 'HEADER', 9, '$ACADVER', 1, 'AC1009', 9, '$DWGCODEPAGE', 3, 'ANSI_1252', 9, '$INSUNITS', 70, 4, 9, '$LTSCALE', 40, 1.0, 0, 'ENDSEC');
+    p(0, 'SECTION', 2, 'TABLES');
+    p(0, 'TABLE', 2, 'LTYPE', 70, 3);
+    p(0, 'LTYPE', 2, 'CONTINUOUS', 70, 0, 3, 'Continua', 72, 65, 73, 0, 40, 0.0);
+    p(0, 'LTYPE', 2, 'CENTER', 70, 0, 3, 'Eje ____ _ ____', 72, 65, 73, 4, 40, 20.0, 49, 12.0, 49, -3.0, 49, 2.0, 49, -3.0);
+    p(0, 'LTYPE', 2, 'HIDDEN', 70, 0, 3, 'Oculta - - -', 72, 65, 73, 2, 40, 6.0, 49, 4.0, 49, -2.0);
+    p(0, 'ENDTAB');
+    const capas = [['CONTORNO', 7, 'CONTINUOUS'], ['ROSCA', 3, 'CONTINUOUS'], ['OCULTAS', 8, 'HIDDEN'],
+                   ['EJES', 1, 'CENTER'], ['COTAS', 4, 'CONTINUOUS'], ['TEXTO', 7, 'CONTINUOUS'], ['CAJETIN', 7, 'CONTINUOUS']];
+    p(0, 'TABLE', 2, 'LAYER', 70, capas.length);
+    for (const [n, c, lt] of capas) p(0, 'LAYER', 2, n, 70, 0, 62, c, 6, lt);
+    p(0, 'ENDTAB', 0, 'ENDSEC');
+    p(0, 'SECTION', 2, 'ENTITIES');
+    for (const x of this.ent) p(x);
+    p(0, 'ENDSEC', 0, 'EOF');
+    // AutoCAD R12 lee texto en Windows-1252, no UTF-8
+    const cp1252 = { '€': 0x80, '‚': 0x82, '„': 0x84, '…': 0x85, '‘': 0x91, '’': 0x92, '“': 0x93, '”': 0x94, '–': 0x96, '—': 0x97 };
+    const txt = out.join('\r\n') + '\r\n';
+    const bytes = [];
+    for (const ch of txt) {
+      const c = ch.codePointAt(0);
+      if (c < 256) bytes.push(c);
+      else if (cp1252[ch]) bytes.push(cp1252[ch]);
+      else for (const k of ch.normalize('NFKC')) { const n = k.codePointAt(0); bytes.push(n < 256 ? n : 63); } // ₂ → 2
+    }
+    return new Blob([new Uint8Array(bytes)], { type: 'application/dxf' });
+  }
+}
+
+/* =====================================================================
+   MÓDULO: Pernos y roscas (métrica ISO)
+   ===================================================================== */
+// Tabla ISO 261 (paso grueso), ISO 4017 (cabeza: s, k) e ISO 4032 (tuerca: m)
+const ISO = {
+  M3:  { d: 3,  p: 0.5,  s: 5.5, k: 2,    m: 2.4 },
+  M4:  { d: 4,  p: 0.7,  s: 7,   k: 2.8,  m: 3.2 },
+  M5:  { d: 5,  p: 0.8,  s: 8,   k: 3.5,  m: 4.7 },
+  M6:  { d: 6,  p: 1,    s: 10,  k: 4,    m: 5.2 },
+  M8:  { d: 8,  p: 1.25, s: 13,  k: 5.3,  m: 6.8 },
+  M10: { d: 10, p: 1.5,  s: 16,  k: 6.4,  m: 8.4 },
+  M12: { d: 12, p: 1.75, s: 18,  k: 7.5,  m: 10.8 },
+  M14: { d: 14, p: 2,    s: 21,  k: 8.8,  m: 12.8 },
+  M16: { d: 16, p: 2,    s: 24,  k: 10,   m: 14.8 },
+  M20: { d: 20, p: 2.5,  s: 30,  k: 12.5, m: 18 },
+  M24: { d: 24, p: 3,    s: 36,  k: 15,   m: 21.5 },
+  M30: { d: 30, p: 3.5,  s: 46,  k: 18.7, m: 25.6 },
+  M36: { d: 36, p: 4,    s: 55,  k: 22.5, m: 31 },
+};
+
+const moduloPernos = {
+  id: 'pernos',
+  titulo: 'Pernos y roscas',
+  descripcion: 'Perno de cabeza hexagonal (rosca externa), tuerca (rosca interna) o conjunto. Elegir una medida ISO rellena valores; todos se pueden editar a mano.',
+
+  selectores: [
+    { id: 'tipo', etiqueta: 'Pieza', opciones: [['perno', 'Perno (rosca externa)'], ['tuerca', 'Tuerca (rosca interna)'], ['conjunto', 'Conjunto perno + tuerca']], valor: 'perno' },
+    { id: 'norma', etiqueta: 'Medida normalizada', opciones: [...Object.keys(ISO).map(k => [k, k + ' × ' + ISO[k].p]), ['libre', 'Personalizada']], valor: 'M10' },
+  ],
+
+  campos: [
+    { id: 'd',  etiqueta: 'Diámetro nominal d',      uni: 'mm', min: 1,   max: 200,  valor: 10 },
+    { id: 'p',  etiqueta: 'Paso p',                  uni: 'mm', min: 0.2, max: 8,    valor: 1.5, paso: 0.05 },
+    { id: 'L',  etiqueta: 'Longitud del vástago L',  uni: 'mm', min: 2,   max: 1000, valor: 50, solo: ['perno', 'conjunto'] },
+    { id: 'b',  etiqueta: 'Longitud roscada b',      uni: 'mm', min: 1,   max: 1000, valor: 26, solo: ['perno', 'conjunto'] },
+    { id: 's',  etiqueta: 'Entre caras s',           uni: 'mm', min: 2,   max: 300,  valor: 16 },
+    { id: 'k',  etiqueta: 'Altura de cabeza k',      uni: 'mm', min: 0.5, max: 200,  valor: 6.4, solo: ['perno', 'conjunto'] },
+    { id: 'm',  etiqueta: 'Altura de tuerca m',      uni: 'mm', min: 0.5, max: 200,  valor: 8.4, solo: ['tuerca', 'conjunto'] },
+  ],
+
+  cargas: [
+    { id: 'F',  etiqueta: 'Carga axial (tracción) F', uni: 'kN', min: 0, max: 5000, valor: 10 },
+    { id: 'V',  etiqueta: 'Carga cortante V',         uni: 'kN', min: 0, max: 5000, valor: 3 },
+    { id: 'n',  etiqueta: 'Planos de corte',          uni: '',   min: 1, max: 4,    valor: 1, paso: 1 },
+    { id: 'K',  etiqueta: 'Coef. de par K',           uni: '',   min: 0.05, max: 0.5, valor: 0.2, paso: 0.01 },
+    { id: 'FSr', etiqueta: 'Factor de seguridad mínimo', uni: '', min: 1, max: 10, valor: 2, paso: 0.1 },
+  ],
+
+  trabajos: [
+    ['todos', 'Todos los materiales'],
+    ['ligera', 'Carga ligera (soportes, carpintería metálica)'],
+    ['media', 'Carga media (maquinaria general, estructuras)'],
+    ['alta', 'Carga alta (uniones críticas, vibración)'],
+    ['corrosivo', 'Ambiente húmedo o corrosivo'],
+  ],
+
+  // Clases de resistencia ISO 898-1 y A2/A4 ISO 3506-1
+  materiales: [
+    { id: '4.6',   nombre: 'Acero clase 4.6',          Re: 240, Rm: 400, trabajos: ['ligera'],         uso: 'Uniones poco solicitadas, estructuras ligeras.' },
+    { id: '5.6',   nombre: 'Acero clase 5.6',          Re: 300, Rm: 500, trabajos: ['ligera', 'media'], uso: 'Uso general, carga moderada.' },
+    { id: '8.8',   nombre: 'Acero clase 8.8',          Re: 640, Rm: 800, trabajos: ['media', 'alta'],   uso: 'Maquinaria y estructuras. El más usado.' },
+    { id: '10.9',  nombre: 'Acero aleado clase 10.9',  Re: 900, Rm: 1000, trabajos: ['alta'],           uso: 'Alta resistencia: uniones críticas y con vibración.' },
+    { id: '12.9',  nombre: 'Acero aleado clase 12.9',  Re: 1080, Rm: 1200, trabajos: ['alta'],          uso: 'Máxima resistencia: utillajes y moldes.' },
+    { id: 'A2-70', nombre: 'Inoxidable A2-70 (304)',   Re: 450, Rm: 700, trabajos: ['corrosivo', 'media'], uso: 'Ambiente húmedo, industria alimentaria.' },
+    { id: 'A4-80', nombre: 'Inoxidable A4-80 (316)',   Re: 600, Rm: 800, trabajos: ['corrosivo', 'alta'],  uso: 'Ambiente marino o químico.' },
+  ],
+  materialDefecto: '8.8',
+
+  alCambiarSelector(id, valor, ponerValores) {
+    if (id === 'norma' && ISO[valor]) {
+      const t = ISO[valor];
+      ponerValores({ d: t.d, p: t.p, s: t.s, k: t.k, m: t.m, b: Math.min(2 * t.d + 6, leerValorActual('L')) });
+    }
+  },
+  alEditarCampo(id) {
+    if (['d', 'p', 's', 'k', 'm'].includes(id)) ponerSelector('norma', 'libre');
+  },
+
+  validar(v) {
+    const e = {};
+    if (v.p >= v.d / 2) e.p = 'El paso debe ser menor que d/2.';
+    if (this._tipo !== 'tuerca' && v.b > v.L) e.b = 'No puede superar la longitud L.';
+    if (this._tipo === 'conjunto' && v.m > v.b) e.m = 'La tuerca debe caber en la zona roscada (m ≤ b).';
+    if (v.s <= v.d) e.s = 'Debe ser mayor que el diámetro d.';
+    return e;
+  },
+
+  // Diámetros de la rosca (ISO 724)
+  diametros(v) {
+    const H = 0.866025 * v.p;
+    return {
+      d2: v.d - 0.649519 * v.p,           // diámetro medio
+      d3: v.d - 1.226869 * v.p,           // diámetro de núcleo (perno)
+      D1: v.d - 1.082532 * v.p,           // diámetro menor (tuerca)
+      H,
+    };
+  },
+
+  nombreRosca(v) {
+    const n = (x) => fmt(x, 2).replace(/,?0+$/, '');
+    return `M${n(v.d)}×${n(v.p)}`;
+  },
+
+  titulo3D(v, sel) {
+    const nom = this.nombreRosca(v);
+    if (sel.tipo === 'tuerca') return `Tuerca hexagonal ${nom}`;
+    if (sel.tipo === 'conjunto') return `Perno ${nom}×${fmt(v.L, 0)} + tuerca`;
+    return `Perno hexagonal ${nom}×${fmt(v.L, 0)}`;
+  },
+
+  construir3D(v, sel) {
+    const g = new THREE.Group();
+    const { d3, D1 } = this.diametros(v);
+    const acero = new THREE.MeshStandardMaterial({ color: 0xc4ccd6, metalness: 0.6, roughness: 0.38 });
+    const tuercaMat = new THREE.MeshStandardMaterial({ color: 0xb8a57a, metalness: 0.8, roughness: 0.35, side: THREE.DoubleSide });
+
+    const perno = () => {
+      const p = new THREE.Group();
+      const cab = new THREE.Mesh(geometriaHexagono(v.s, v.k), acero);
+      p.add(cab);
+      const liso = v.L - v.b;
+      if (liso > 0.01) {
+        const c = new THREE.Mesh(new THREE.CylinderGeometry(v.d / 2, v.d / 2, liso, 64), acero);
+        c.position.y = -liso / 2;
+        p.add(c);
+      }
+      const r = new THREE.Mesh(geometriaRosca({ rMayor: v.d / 2, rMenor: d3 / 2, paso: v.p, largo: v.b }), acero);
+      r.rotation.x = Math.PI;          // la punta queda hacia abajo
+      r.position.y = -liso;
+      p.add(r);
+      const tapa = new THREE.Mesh(new THREE.CircleGeometry(d3 / 2 * 0.98, 48), acero);
+      tapa.rotation.x = Math.PI / 2;
+      tapa.position.y = -v.L + 0.001;
+      p.add(tapa);
+      return p;
+    };
+
+    const tuerca = () => {
+      const t = new THREE.Group();
+      t.add(new THREE.Mesh(geometriaHexagono(v.s, v.m, v.d / 2 + 0.01), tuercaMat));
+      t.add(new THREE.Mesh(geometriaRosca({ rMayor: v.d / 2, rMenor: D1 / 2, paso: v.p, largo: v.m, externa: false }), tuercaMat));
+      for (const y of [0.002, v.m - 0.002]) {
+        const a = new THREE.Mesh(new THREE.RingGeometry(D1 / 2, v.d / 2 + 0.01, 48), tuercaMat);
+        a.rotation.x = -Math.PI / 2; a.position.y = y;
+        t.add(a);
+      }
+      return t;
+    };
+
+    if (sel.tipo === 'perno') g.add(perno());
+    else if (sel.tipo === 'tuerca') g.add(tuerca());
+    else {
+      g.add(perno());
+      const t = tuerca();
+      // la tuerca queda sobre la zona roscada, a 1/3 de la longitud roscada desde la cabeza
+      t.position.y = -(v.L - v.b) - Math.max(0, Math.min(v.b - v.m, v.b / 3)) - v.m;
+      g.add(t);
+    }
+    return g;
+  },
+
+  /* Cálculos — Shigley, Diseño en Ingeniería Mecánica, cap. 8; ISO 898-1; VDI 2230 simplificado */
+  calcular(v, c, mat, sel) {
+    const { d2, d3, D1 } = this.diametros(v);
+    const As = Math.PI / 4 * ((d2 + d3) / 2) ** 2;      // área resistente a tracción, ISO 898-1
+    const F = c.F * 1000, V = c.V * 1000;               // N
+    const sigma = F / As;                                // MPa
+    const tau = V / (As * c.n);                          // MPa (conservador: plano por la rosca)
+    const vm = Math.sqrt(sigma ** 2 + 3 * tau ** 2);     // von Mises
+    const FSt = sigma > 0 ? mat.Re / sigma : Infinity;
+    const FSc = tau > 0 ? 0.577 * mat.Re / tau : Infinity;
+    const FSvm = vm > 0 ? mat.Re / vm : Infinity;
+    const Sp = 0.9 * mat.Re;                             // resistencia de prueba aprox.
+    const Fi = 0.75 * As * Sp;                           // precarga recomendada (uniones reutilizables)
+    const T = c.K * Fi * v.d / 1000;                     // par de apriete N·m
+    const Fmax = As * mat.Re / c.FSr;                    // carga axial admisible
+    // Longitud mínima de rosca acoplada (mismo material), Machinery's Handbook
+    const Le = 2 * As / (0.5 * Math.PI * (v.d - 0.64952 * v.p));
+    const enTuerca = sel.tipo !== 'perno';
+    const okFS = FSvm >= c.FSr;
+    const okRosca = !enTuerca || v.m >= Le;
+    const FSfmt = (x) => Number.isFinite(x) ? fmt(x, 2) : '∞';
+
+    const filas = [
+      ['Diámetro medio d₂', fmt(d2, 3) + ' mm'],
+      ['Diámetro de núcleo d₃', fmt(d3, 3) + ' mm'],
+      ['Diámetro menor tuerca D₁', fmt(D1, 3) + ' mm'],
+      ['Área resistente Aₛ', fmt(As, 1) + ' mm²'],
+      ['Tensión de tracción σ', fmt(sigma, 1) + ' MPa'],
+      ['Tensión cortante τ', fmt(tau, 1) + ' MPa'],
+      ['Tensión de von Mises', fmt(vm, 1) + ' MPa'],
+      ['FS tracción', FSfmt(FSt), FSt >= c.FSr],
+      ['FS corte', FSfmt(FSc), FSc >= c.FSr],
+      ['FS combinado (von Mises)', FSfmt(FSvm), okFS],
+      ['Carga axial admisible', fmt(Fmax / 1000, 2) + ' kN'],
+      ['Precarga recomendada Fᵢ', fmt(Fi / 1000, 2) + ' kN'],
+      ['Par de apriete T = K·Fᵢ·d', fmt(T, 1) + ' N·m'],
+      ['Rosca acoplada mínima Lₑ', fmt(Le, 2) + ' mm', enTuerca ? okRosca : undefined],
+      ['Altura de tuerca recomendada (0,8·d)', fmt(0.8 * v.d, 1) + ' mm'],
+    ];
+    const ok = okFS && okRosca;
+    let msg = ok
+      ? `CUMPLE: FS = ${FSfmt(FSvm)} ≥ ${fmt(c.FSr, 1)}`
+      : !okFS ? `NO CUMPLE: FS = ${FSfmt(FSvm)} < ${fmt(c.FSr, 1)}. Aumente d o use un material más resistente.`
+              : `NO CUMPLE: tuerca m = ${fmt(v.m, 1)} mm < Lₑ = ${fmt(Le, 1)} mm.`;
+    return { filas, ok, msg };
+  },
+
+  /* Plano 2D. Origen = intersección eje / cara de apoyo de la cabeza. */
+  dibujarDXF(v, sel, dxf, E, ox, oy) {
+    const { d3, D1 } = this.diametros(v);
+    const e = v.s / Math.sqrt(3) * 2;   // entre esquinas
+    const X = (x) => ox + x * E, Y = (y) => oy + y * E;
+    const L = (x1, y1, x2, y2, capa) => dxf.linea(X(x1), Y(y1), X(x2), Y(y2), capa);
+    const r = v.d / 2, rn = d3 / 2, ch = Math.min(v.p, r - rn + 0.3 * v.p);
+
+    const yT = -(v.L - v.b) - Math.max(0, Math.min(v.b - v.m, v.b / 3)) - v.m; // base de la tuerca (conjunto)
+    // línea vertical del perno; en el conjunto se oculta el tramo tapado por la tuerca
+    const V = (x, ya, yb, capa) => {
+      const lo = Math.min(ya, yb), hi = Math.max(ya, yb);
+      if (sel.tipo !== 'conjunto' || hi <= yT || lo >= yT + v.m) return L(x, lo, x, hi, capa);
+      if (lo < yT) L(x, lo, x, yT, capa);
+      if (hi > yT + v.m) L(x, yT + v.m, x, hi, capa);
+    };
+    const dibPerno = () => {
+      // cabeza (vista por las esquinas)
+      dxf.rect(X(-e / 2), Y(0), X(e / 2), Y(v.k), 'CONTORNO');
+      L(-e / 4, 0, -e / 4, v.k, 'CONTORNO');
+      L(e / 4, 0, e / 4, v.k, 'CONTORNO');
+      // vástago
+      V(-r, 0, -(v.L - ch)); V(r, 0, -(v.L - ch));
+      L(-r, -(v.L - ch), -(r - ch), -v.L); L(r, -(v.L - ch), r - ch, -v.L);
+      L(-(r - ch), -v.L, r - ch, -v.L);
+      // rosca: diámetro de núcleo con línea fina y fin de rosca
+      V(-rn, -(v.L - v.b), -v.L + ch * 0.5, 'ROSCA');
+      V(rn, -(v.L - v.b), -v.L + ch * 0.5, 'ROSCA');
+      if (sel.tipo !== 'conjunto' || -(v.L - v.b) < yT || -(v.L - v.b) > yT + v.m) L(-r, -(v.L - v.b), r, -(v.L - v.b), 'CONTORNO');
+      // eje
+      L(0, v.k + 3 / E, 0, -v.L - 3 / E, 'EJES');
+      // cotas
+      // (en cotas verticales hacia abajo, offset positivo = derecha)
+      dxf.cota(X(r), Y(0), X(r), Y(-v.L), (e / 2 - r) * E + 10, 'L = ' + fmt(v.L, 1));
+      dxf.cota(X(-r), Y(-(v.L - v.b)), X(-r), Y(-v.L), -8, 'b = ' + fmt(v.b, 1));
+      dxf.cota(X(-e / 2), Y(v.k), X(-e / 2), Y(0), -8, 'k = ' + fmt(v.k, 1));
+      dxf.cota(X(-r), Y(-v.L), X(r), Y(-v.L), -8, this.nombreRosca(v));
+    };
+
+    const dibTuercaFrente = (y0) => {
+      dxf.rect(X(-e / 2), Y(y0), X(e / 2), Y(y0 + v.m), 'CONTORNO');
+      L(-e / 4, y0, -e / 4, y0 + v.m); L(e / 4, y0, e / 4, y0 + v.m);
+      if (sel.tipo === 'tuerca') {
+        L(-D1 / 2, y0, -D1 / 2, y0 + v.m, 'OCULTAS'); L(D1 / 2, y0, D1 / 2, y0 + v.m, 'OCULTAS');
+        L(-r, y0, -r, y0 + v.m, 'OCULTAS'); L(r, y0, r, y0 + v.m, 'OCULTAS');
+        L(0, y0 - 3 / E, 0, y0 + v.m + 3 / E, 'EJES');
+        dxf.cota(X(e / 2), Y(y0 + v.m), X(e / 2), Y(y0), 8, 'm = ' + fmt(v.m, 1));
+        dxf.cota(X(-e / 2), Y(y0), X(e / 2), Y(y0), -8, 'e = ' + fmt(e, 1));
+      }
+    };
+
+    if (sel.tipo === 'perno' || sel.tipo === 'conjunto') dibPerno();
+    if (sel.tipo === 'tuerca') dibTuercaFrente(0);
+    if (sel.tipo === 'conjunto') dibTuercaFrente(yT);
+
+    // Vista superior (a la derecha)
+    const cx = 1.6 * e;
+    const cy = sel.tipo === 'tuerca' ? v.m / 2 : v.k / 2;
+    const hex = [];
+    for (let k = 0; k < 6; k++) { const a = Math.PI / 3 * k; hex.push([X(cx + e / 2 * Math.cos(a)), Y(cy + e / 2 * Math.sin(a))]); }
+    dxf.poligono(hex, 'CONTORNO');
+    if (sel.tipo === 'tuerca') {
+      dxf.circulo(X(cx), Y(cy), D1 / 2 * E, 'CONTORNO');
+      dxf.arco(X(cx), Y(cy), r * E, 0, 270, 'ROSCA');    // convención de rosca interna: 3/4 de círculo
+    } else {
+      dxf.circulo(X(cx), Y(cy), v.s / 2 * E * 0.95, 'CONTORNO'); // cara de apoyo
+    }
+    L(cx - e / 2 - 3 / E, cy, cx + e / 2 + 3 / E, cy, 'EJES');
+    L(cx, cy - e / 2 - 3 / E, cx, cy + e / 2 + 3 / E, 'EJES');
+    dxf.cota(X(cx + e / 4), Y(cy - v.s / 2), X(cx + e / 4), Y(cy + v.s / 2), -(e / 4 * E + 8), 's = ' + fmt(v.s, 1));
+  },
+
+  // Extensión del dibujo en mm de pieza: [xmin, ymin, xmax, ymax]
+  extensionDXF(v, sel) {
+    const e = v.s / Math.sqrt(3) * 2;
+    const ancho = 2.1 * e;
+    if (sel.tipo === 'tuerca') return [-e / 2, -e / 2, ancho, v.m + e / 2];
+    return [-e / 2, -v.L, ancho, v.k];
+  },
+};
+
+const MODULOS = { pernos: moduloPernos };
+
+/* =====================================================================
+   Visor 3D
+   ===================================================================== */
+const visor = { listo: false };
+function iniciarVisor() {
+  const cont = $('visor');
+  try {
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    cont.appendChild(renderer.domElement);
+    const escena = new THREE.Scene();
+    escena.background = new THREE.Color(0xe8ecf2);
+    // iluminación de entorno para que el metal se vea como metal
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    escena.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    const camara = new THREE.PerspectiveCamera(40, 1, 0.1, 10000);
+    const controles = new OrbitControls(camara, renderer.domElement);
+    controles.enableDamping = true;
+
+    escena.add(new THREE.HemisphereLight(0xffffff, 0x667788, 0.6));
+    const sol = new THREE.DirectionalLight(0xffffff, 1.6); sol.position.set(1, 2, 1.5); escena.add(sol);
+    const rel = new THREE.DirectionalLight(0xcfe0ff, 0.6); rel.position.set(-2, -0.5, -1); escena.add(rel);
+
+    const pieza = new THREE.Group(); escena.add(pieza);
+    const rejilla = new THREE.GridHelper(1, 20, 0x8a96a8, 0xc5ccd6); escena.add(rejilla);
+    const ejes = new THREE.AxesHelper(1); escena.add(ejes);
+
+    Object.assign(visor, { renderer, escena, camara, controles, pieza, rejilla, ejes, listo: true, girar: false, alambre: false });
+
+    const redimensionar = () => {
+      const w = cont.clientWidth || 1, h = cont.clientHeight || 1;
+      renderer.setSize(w, h, false);
+      renderer.domElement.style.width = '100%';
+      renderer.domElement.style.height = '100%';
+      camara.aspect = w / h; camara.updateProjectionMatrix();
+    };
+    new ResizeObserver(redimensionar).observe(cont);
+    redimensionar();
+
+    renderer.setAnimationLoop(() => {
+      if (visor.girar) pieza.rotation.y += 0.006;
+      controles.update();
+      renderer.render(escena, camara);
+    });
+  } catch (err) {
+    console.error(err);
+    $('aviso-3d').style.display = 'flex';
+    $('aviso-3d').textContent = 'No se pudo iniciar la vista 3D (WebGL no disponible). Los cálculos y la exportación DXF siguen funcionando.';
+  }
+}
+
+function mostrarPieza(grupo, encuadrar) {
+  if (!visor.listo) return;
+  const { pieza } = visor;
+  for (const h of [...pieza.children]) {
+    pieza.remove(h);
+    h.traverse(o => { o.geometry?.dispose(); });
+  }
+  pieza.add(grupo);
+  aplicarAlambre();
+  const caja = new THREE.Box3().setFromObject(grupo);
+  const tam = caja.getSize(new THREE.Vector3());
+  const tamMax = Math.max(tam.x, tam.y, tam.z) || 1;
+  visor.rejilla.scale.setScalar(tamMax * 2);
+  visor.rejilla.position.y = caja.min.y - tamMax * 0.02;
+  visor.ejes.scale.setScalar(tamMax * 0.25);
+  visor.ejes.position.set(caja.max.x + tamMax * 0.2, caja.min.y, 0);
+  if (encuadrar) encuadrarCamara();
+}
+
+function encuadrarCamara() {
+  if (!visor.listo) return;
+  const caja = new THREE.Box3().setFromObject(visor.pieza);
+  if (caja.isEmpty()) return;
+  const centro = caja.getCenter(new THREE.Vector3());
+  const radio = caja.getBoundingSphere(new THREE.Sphere()).radius || 1;
+  const dist = radio / Math.sin((visor.camara.fov * Math.PI / 180) / 2) * 1.15;
+  const dir = new THREE.Vector3(1, 0.55, 1.2).normalize();
+  visor.camara.position.copy(centro).addScaledVector(dir, dist);
+  visor.camara.near = dist / 100; visor.camara.far = dist * 100;
+  visor.camara.updateProjectionMatrix();
+  visor.controles.target.copy(centro);
+  visor.controles.update();
+}
+
+function aplicarAlambre() {
+  visor.pieza?.traverse(o => { if (o.material) o.material.wireframe = visor.alambre; });
+}
+
+/* =====================================================================
+   Estado e interfaz
+   ===================================================================== */
+const estado = {
+  modulo: null,
+  valores: {},     // medidas y cargas
+  sel: {},         // selectores
+  errores: {},
+  numero: 1,
+};
+
+function leerValorActual(id) { return estado.valores[id]; }
+
+function ponerSelector(id, valor) {
+  estado.sel[id] = valor;
+  const el = $('sel-' + id); if (el) el.value = valor;
+}
+
+function crearCampo(def, contenedor) {
+  const div = document.createElement('div');
+  div.className = 'campo'; div.id = 'c-' + def.id;
+  div.innerHTML = `<label for="in-${def.id}">${def.etiqueta}</label>
+    <input id="in-${def.id}" type="number" inputmode="decimal" step="${def.paso ?? 'any'}" min="${def.min}" max="${def.max}">
+    <span class="uni">${def.uni}</span>`;
+  contenedor.appendChild(div);
+  const inp = div.querySelector('input');
+  inp.value = estado.valores[def.id];
+  inp.addEventListener('input', () => {
+    const n = parseFloat(String(inp.value).replace(',', '.'));
+    if (Number.isFinite(n)) estado.valores[def.id] = n;
+    estado.crudos[def.id] = inp.value;
+    estado.modulo.alEditarCampo?.(def.id);
+    actualizar(false);
+  });
+}
+
+function crearSelector(def, contenedor) {
+  const div = document.createElement('div');
+  div.className = 'campo'; div.style.gridTemplateColumns = '1fr 200px';
+  div.innerHTML = `<label for="sel-${def.id}">${def.etiqueta}</label><select id="sel-${def.id}"></select>`;
+  const s = div.querySelector('select');
+  for (const [v, t] of def.opciones) s.add(new Option(t, v));
+  s.value = estado.sel[def.id];
+  s.addEventListener('change', () => {
+    estado.sel[def.id] = s.value;
+    estado.modulo.alCambiarSelector?.(def.id, s.value, ponerValores);
+    actualizar(true);
+  });
+  contenedor.appendChild(div);
+}
+
+function ponerValores(obj) {
+  for (const [k, v] of Object.entries(obj)) {
+    estado.valores[k] = Math.round(v * 1000) / 1000;
+    estado.crudos[k] = String(estado.valores[k]);
+    const el = $('in-' + k); if (el) el.value = estado.valores[k];
+  }
+}
+
+function cargarModulo(id) {
+  const m = MODULOS[id];
+  estado.modulo = m;
+  estado.valores = {}; estado.crudos = {}; estado.sel = {};
+  for (const c of [...m.campos, ...m.cargas]) { estado.valores[c.id] = c.valor; estado.crudos[c.id] = String(c.valor); }
+  for (const s of m.selectores) estado.sel[s.id] = s.valor;
+
+  $('mod-titulo').textContent = m.titulo;
+  $('mod-desc').textContent = m.descripcion;
+  const cc = $('campos'); cc.innerHTML = '';
+  m.selectores.forEach(s => crearSelector(s, cc));
+  m.campos.forEach(c => crearCampo(c, cc));
+  const cg = $('cargas'); cg.innerHTML = '';
+  m.cargas.forEach(c => crearCampo(c, cg));
+
+  // materiales
+  const tr = $('trabajo'); tr.innerHTML = '';
+  for (const [v, t] of m.trabajos) tr.add(new Option(t, v));
+  llenarMateriales(m.materialDefecto);
+
+  document.querySelectorAll('#menu button[data-modulo]').forEach(b => b.classList.toggle('activo', b.dataset.modulo === id));
+  actualizar(true);
+}
+
+function llenarMateriales(preferido) {
+  const m = estado.modulo, t = $('trabajo').value, sel = $('material');
+  const previo = preferido ?? sel.value;
+  sel.innerHTML = '';
+  const lista = m.materiales.filter(x => t === 'todos' || x.trabajos.includes(t));
+  for (const x of lista) sel.add(new Option(`${x.nombre} — Re ${x.Re} / Rm ${x.Rm} MPa`, x.id));
+  sel.add(new Option('Otro (escribir a mano)…', 'manual'));
+  sel.value = lista.some(x => x.id === previo) || previo === 'manual' ? previo : (lista[0]?.id ?? 'manual');
+}
+
+function materialActual() {
+  const id = $('material').value;
+  if (id === 'manual') {
+    const Re = parseFloat($('mat-re').value), Rm = parseFloat($('mat-rm').value);
+    return {
+      nombre: $('mat-nombre').value.trim() || 'Material a mano',
+      Re: Number.isFinite(Re) && Re > 0 ? Re : NaN,
+      Rm: Number.isFinite(Rm) && Rm > 0 ? Rm : NaN,
+      uso: 'Propiedades ingresadas manualmente.',
+    };
+  }
+  return estado.modulo.materiales.find(x => x.id === id);
+}
+
+function validar() {
+  const m = estado.modulo, err = {};
+  for (const c of [...m.campos, ...m.cargas]) {
+    const crudo = String(estado.crudos[c.id] ?? '').replace(',', '.').trim();
+    const n = parseFloat(crudo);
+    if (c.solo && !c.solo.includes(estado.sel.tipo)) continue;
+    if (crudo === '' || !Number.isFinite(n)) err[c.id] = 'Ingrese un número.';
+    else if (n < c.min || n > c.max) err[c.id] = `Fuera de rango (${c.min} – ${c.max}).`;
+  }
+  if (Object.keys(err).length === 0) { m._tipo = estado.sel.tipo; Object.assign(err, m.validar?.(estado.valores) ?? {}); }
+  for (const c of [...m.campos, ...m.cargas]) {
+    const div = $('c-' + c.id); if (!div) continue;
+    const visible = !c.solo || c.solo.includes(estado.sel.tipo);
+    div.hidden = !visible;
+    if (!visible) delete err[c.id];
+    div.classList.toggle('error', !!err[c.id]);
+    div.querySelector('.msg')?.remove();
+    if (err[c.id]) { const s = document.createElement('span'); s.className = 'msg'; s.textContent = err[c.id]; div.appendChild(s); }
+  }
+  estado.errores = err;
+  return Object.keys(err).length === 0;
+}
+
+let ultimaGeo = '';
+function actualizar(encuadrar) {
+  const m = estado.modulo;
+  const valido = validar();
+  const mat = materialActual();
+  $('mat-manual').hidden = $('material').value !== 'manual';
+  $('mat-info').textContent = mat?.uso ?? '';
+
+  // cajetín
+  $('caj-mat').textContent = mat?.nombre ?? '—';
+
+  if (!valido) {
+    $('veredicto').className = 'veredicto mal';
+    $('veredicto').textContent = 'Corrija las medidas marcadas en rojo. La vista muestra la última pieza válida.';
+    return;
+  }
+  const v = estado.valores;
+  $('caj-titulo').textContent = m.titulo3D(v, estado.sel);
+  $('caj-esc').textContent = escalaPlano().etiqueta;
+
+  // geometría: sólo se regenera si cambian las medidas o selectores
+  const clave = JSON.stringify([m.campos.map(c => v[c.id]), estado.sel]);
+  if (clave !== ultimaGeo) {
+    ultimaGeo = clave;
+    try { mostrarPieza(m.construir3D(v, estado.sel), encuadrar); }
+    catch (e) { console.error(e); toast('No se pudo generar la geometría con estas medidas.'); }
+  }
+
+  // cálculos
+  const tabla = $('resultados'); tabla.innerHTML = '';
+  if (!mat || !Number.isFinite(mat.Re) || !Number.isFinite(mat.Rm)) {
+    $('veredicto').className = 'veredicto mal';
+    $('veredicto').textContent = 'Ingrese Re y Rm válidos para el material.';
+    return;
+  }
+  const r = m.calcular(v, v, mat, estado.sel);
+  for (const [k, val, ok] of r.filas) {
+    const tr = tabla.insertRow();
+    tr.insertCell().textContent = k;
+    const td = tr.insertCell(); td.textContent = val;
+    if (ok === true) td.className = 'ok';
+    if (ok === false) td.className = 'mal';
+  }
+  $('veredicto').className = 'veredicto ' + (r.ok ? 'ok' : 'mal');
+  $('veredicto').textContent = r.msg;
+}
+
+/* ---------- Numeración correlativa ---------- */
+const CLAVE_NUM = 'disenador3d.ultimoNumero';
+function numeroTexto() { return 'PZ-' + String(estado.numero).padStart(4, '0'); }
+function iniciarNumeracion() {
+  const ultimo = parseInt(almacen.leer(CLAVE_NUM, '0'), 10) || 0;
+  estado.numero = ultimo + 1;
+  almacen.guardar(CLAVE_NUM, String(estado.numero));
+  $('caj-num').textContent = numeroTexto();
+}
+function nuevaPieza() {
+  const ultimo = parseInt(almacen.leer(CLAVE_NUM, '0'), 10) || 0;
+  estado.numero = Math.max(ultimo, estado.numero) + 1;
+  almacen.guardar(CLAVE_NUM, String(estado.numero));
+  $('caj-num').textContent = numeroTexto();
+  cargarModulo(estado.modulo.id);
+  toast('Nueva pieza: ' + numeroTexto());
+}
+
+function nombreArchivo(ext) {
+  const t = $('caj-titulo').textContent.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[×x]/g, 'x').replace(/[^A-Za-z0-9.+-]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+  return `${numeroTexto()}_${t}.${ext}`;
+}
+
+/* ---------- Exportaciones ---------- */
+function exportarSTL() {
+  if (!validar()) return toast('Corrija las medidas antes de exportar.');
+  if (!visor.listo) return toast('La vista 3D no está disponible.');
+  const copia = visor.pieza.clone(true);
+  copia.rotation.set(0, 0, 0);
+  copia.updateMatrixWorld(true);
+  const datos = new STLExporter().parse(copia, { binary: true });
+  descargar(nombreArchivo('stl'), new Blob([datos], { type: 'application/sla' }));
+  toast('STL exportado (unidades: mm)');
+}
+
+/* Hoja A4 apaisada: 297×210, margen 10, cajetín 180×36 */
+const HOJA = { W: 297, H: 210, mg: 10, cajW: 180, cajH: 36 };
+/** Mayor escala normalizada con la que las vistas caben en la hoja. */
+function escalaPlano() {
+  const { W, H, mg, cajH } = HOJA;
+  const [x0, y0, x1, y1] = estado.modulo.extensionDXF(estado.valores, estado.sel);
+  const anchoUtil = W - 2 * mg - 40, altoUtil = H - 2 * mg - cajH - 30;
+  const escalas = [[10, '10:1'], [5, '5:1'], [2, '2:1'], [1, '1:1'], [0.5, '1:2'], [0.2, '1:5'], [0.1, '1:10'], [0.05, '1:20']];
+  let [E, etiqueta] = escalas[escalas.length - 1];
+  for (const [e, t] of escalas) { if ((x1 - x0) * e <= anchoUtil && (y1 - y0) * e <= altoUtil) { E = e; etiqueta = t; break; } }
+  return { E, etiqueta, x0, y0, x1, y1, anchoUtil, altoUtil };
+}
+
+function exportarDXF() {
+  if (!validar()) return toast('Corrija las medidas antes de exportar.');
+  const m = estado.modulo, v = estado.valores, sel = estado.sel;
+  const mat = materialActual();
+  const dxf = new DXF();
+  // Hoja A4 apaisada, marco y cajetín
+  const { W, H, mg, cajW, cajH } = HOJA;
+  dxf.rect(0, 0, W, H, 'CAJETIN');
+  dxf.rect(mg, mg, W - mg, H - mg, 'CAJETIN');
+
+  const { E, etiqueta, x0, y0, x1, y1, anchoUtil, altoUtil } = escalaPlano();
+  const ox = mg + 20 + (anchoUtil - (x1 - x0) * E) / 2 - x0 * E;
+  const oy = mg + cajH + 15 + (altoUtil - (y1 - y0) * E) / 2 - y0 * E;
+  m.dibujarDXF(v, sel, dxf, E, ox, oy);
+
+  // Cajetín (esquina inferior derecha)
+  const cx = W - mg - cajW, cy = mg;
+  dxf.rect(cx, cy, W - mg, cy + cajH, 'CAJETIN');
+  dxf.linea(cx, cy + 24, W - mg, cy + 24, 'CAJETIN');
+  dxf.linea(cx, cy + 12, W - mg, cy + 12, 'CAJETIN');
+  for (const x of [45, 105, 140]) dxf.linea(cx + x, cy, cx + x, cy + 24, 'CAJETIN');
+  const t = (x, y, s, h = 2) => dxf.texto(cx + x, cy + y, h, s, { capa: 'CAJETIN' });
+  dxf.texto(cx + cajW / 2, cy + 30, 4, $('caj-titulo').textContent, { capa: 'CAJETIN', centrado: true });
+  t(2, 20, 'N.º PLANO', 1.8);  t(2, 14.5, numeroTexto(), 3);
+  t(47, 20, 'MATERIAL', 1.8); t(47, 14.5, (mat?.nombre ?? '').slice(0, 30), 2.3);
+  t(107, 20, 'ESCALA', 1.8);  t(107, 14.5, etiqueta, 3);
+  t(142, 20, 'FECHA', 1.8);   t(142, 14.5, $('caj-fecha').textContent, 2.3);
+  t(2, 8, 'DIBUJO', 1.8);     t(2, 3, ($('caj-autor').value || '-').slice(0, 20), 2.3);
+  t(47, 8, 'PROYECTO', 1.8);  t(47, 3, ($('caj-proyecto').value || '-').slice(0, 45), 2.3);
+  t(142, 8, 'UNIDADES', 1.8); t(142, 3, 'mm', 2.3);
+
+  descargar(nombreArchivo('dxf'), dxf.generar(), 'application/dxf');
+  toast(`DXF exportado (A4, escala ${etiqueta})`);
+}
+
+/* =====================================================================
+   Arranque
+   ===================================================================== */
+$('caj-fecha').textContent = new Date().toLocaleDateString('es');
+$('caj-autor').value = almacen.leer('disenador3d.autor', '');
+$('caj-proyecto').value = almacen.leer('disenador3d.proyecto', '');
+$('caj-autor').addEventListener('input', e => almacen.guardar('disenador3d.autor', e.target.value));
+$('caj-proyecto').addEventListener('input', e => almacen.guardar('disenador3d.proyecto', e.target.value));
+
+$('trabajo').addEventListener('change', () => { llenarMateriales(); actualizar(false); });
+$('material').addEventListener('change', () => actualizar(false));
+for (const id of ['mat-nombre', 'mat-re', 'mat-rm']) $(id).addEventListener('input', () => actualizar(false));
+
+$('menu').addEventListener('click', e => {
+  const b = e.target.closest('button[data-modulo]');
+  if (b && !b.disabled) cargarModulo(b.dataset.modulo);
+});
+$('btn-nueva').addEventListener('click', nuevaPieza);
+$('btn-dxf').addEventListener('click', () => { try { exportarDXF(); } catch (e) { console.error(e); toast('Error al exportar DXF.'); } });
+$('btn-stl').addEventListener('click', () => { try { exportarSTL(); } catch (e) { console.error(e); toast('Error al exportar STL.'); } });
+$('btn-encuadrar').addEventListener('click', encuadrarCamara);
+$('btn-girar').addEventListener('click', e => { visor.girar = !visor.girar; e.target.textContent = 'Girar: ' + (visor.girar ? 'sí' : 'no'); });
+$('btn-alambre').addEventListener('click', e => { visor.alambre = !visor.alambre; aplicarAlambre(); e.target.textContent = 'Alambre: ' + (visor.alambre ? 'sí' : 'no'); });
+
+iniciarVisor();
+iniciarNumeracion();
+cargarModulo('pernos');
+window.__app = { estado, exportarDXF, exportarSTL }; // para pruebas
+</script>
+
+<noscript>Esta herramienta necesita JavaScript.</noscript>
+</body>
+</html>
